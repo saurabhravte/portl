@@ -9,24 +9,26 @@
     "scheme": "portl",
     "userInterfaceStyle": "light",
     "ios": {
-      "icon": "./assets/images/icon.png",
+      "icon": "./assets/expo-app-icon-1024.png",
       "supportsTablet": true,
+      "bundleIdentifier": "com.saurabhravte.portl",
       "config": {
         "usesNonExemptEncryption": false
       }
     },
     "android": {
+      "package": "com.saurabhravte.portl",
       "adaptiveIcon": {
         "backgroundColor": "#FAFAFA",
-        "foregroundImage": "./assets/images/android-icon-foreground.png",
+        "foregroundImage": "./assets/expo-app-icon-1024.png",
         "backgroundImage": "./assets/images/android-icon-background.png",
-        "monochromeImage": "./assets/images/android-icon-monochrome.png"
+        "monochromeImage": "./assets/expo-app-icon-1024.png"
       },
       "predictiveBackGestureEnabled": false
     },
     "web": {
       "output": "static",
-      "favicon": "./assets/images/favicon.png"
+      "favicon": "./assets/expo-app-icon-1024.png"
     },
     "plugins": [
       "expo-router",
@@ -34,10 +36,10 @@
         "expo-splash-screen",
         {
           "backgroundColor": "#0A1018",
-          "image": "./assets/images/splash-icon.png",
+          "image": "./assets/expo-app-icon-1024.png",
           "imageWidth": 180,
           "android": {
-            "image": "./assets/images/splash-icon.png",
+            "image": "./assets/expo-app-icon-1024.png",
             "imageWidth": 180
           }
         }
@@ -84,7 +86,7 @@
       "appEnvironment": "development",
       "router": {},
       "eas": {
-        "projectId": "c9e2dcbc-7e14-470d-9d6a-c82defa4d6f7"
+        "projectId": "92b323c9-5bae-41fc-b1cc-7a432b9886e8"
       }
     }
   }
