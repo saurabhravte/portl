@@ -4,8 +4,8 @@
 insert into societies (id, name, address, calendar_feed_token)
 values (
   '11111111-1111-1111-1111-111111111111',
-  'Sunrise Heights',
-  'Indore, MP',
+  'SR Heights',
+  'Raipur, CG',
   'localdevcalendartoken000000000001'
 )
 on conflict do nothing;
