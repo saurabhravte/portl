@@ -1,7 +1,7 @@
 import { useSupabase } from "@/lib/supabase";
 import { parseInput, residentIdVerifySchema } from "@/lib/validation";
 import { useSessionStore } from "@/stores/session";
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQuery } from "@tanstack/react-query";
 
 export function useMyResidentId() {
   const supabase = useSupabase();

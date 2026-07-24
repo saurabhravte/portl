@@ -24,9 +24,10 @@ export function GoogleSignInButton(props: Props) {
 
   // Lazy require so Expo Go never evaluates `@clerk/expo/google`
   // (which calls requireNativeModule("ClerkGoogleSignIn") at import time).
-  // eslint-disable-next-line @typescript-eslint/no-require-imports
+  /* eslint-disable @typescript-eslint/no-require-imports -- intentional lazy load for Expo Go */
   const { GoogleSignInButtonNative } =
     require("./GoogleSignInButtonNative") as typeof import("./GoogleSignInButtonNative");
+  /* eslint-enable @typescript-eslint/no-require-imports */
 
   return <GoogleSignInButtonNative {...props} />;
 }
@@ -38,7 +39,7 @@ export function GoogleSignInExpoGoHint() {
     <View className="rounded-md border border-border bg-surface-alt px-3 py-2">
       <Text className="text-caption text-ink-muted">
         Google Sign-In needs a development/preview build — it is not available
-        in Expo Go. Use phone or email below.
+        in Expo Go. Use email or username below.
       </Text>
     </View>
   );

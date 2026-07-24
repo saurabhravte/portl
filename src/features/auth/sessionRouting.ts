@@ -1,5 +1,8 @@
+import {
+  needsProfileCompletion,
+} from "@/features/auth/profileCompletion";
 import type { Profile, ProfileStatus } from "@/stores/session";
-import { useAuth } from "@clerk/expo";
+import { useAuth, useUser } from "@clerk/expo";
 import { useRouter, useSegments } from "expo-router";
 import { useEffect } from "react";
 
@@ -22,6 +25,7 @@ export function useSessionRestorationRouting({
   profile: Profile | null;
 }) {
   const { isLoaded, isSignedIn } = useAuth();
+  const { user } = useUser();
   const segments = useSegments();
   const router = useRouter();
 
@@ -32,6 +36,7 @@ export function useSessionRestorationRouting({
     const inAuth = seg0 === "(auth)";
     const atRoot = !seg0 || seg0 === "index";
     const onOnboarding = inAuth && seg1 === "onboarding";
+    const onCompleteProfile = inAuth && seg1 === "complete-profile";
 
     if (!isSignedIn && !onboardingDone && !onOnboarding) {
       router.replace("/(auth)/onboarding" as never);
@@ -42,6 +47,12 @@ export function useSessionRestorationRouting({
       return;
     }
     if (isSignedIn && profileStatus === "linked" && profile) {
+      if (needsProfileCompletion(user, profile)) {
+        if (!onCompleteProfile) {
+          router.replace("/(auth)/complete-profile" as never);
+        }
+        return;
+      }
       if (inAuth || atRoot) router.replace(ROLE_HOME[profile.role] as never);
     }
   }, [
@@ -51,6 +62,7 @@ export function useSessionRestorationRouting({
     onboardingDone,
     profileStatus,
     profile,
+    user,
     segments,
     router,
   ]);

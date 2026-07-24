@@ -8,6 +8,10 @@ jest.mock("@clerk/expo", () => {
   };
 });
 
+jest.mock("expo", () => ({
+  isRunningInExpoGo: jest.fn(() => false),
+}));
+
 jest.mock("@react-native-community/netinfo", () => ({
   __esModule: true,
   default: {

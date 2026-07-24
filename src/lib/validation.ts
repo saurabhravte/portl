@@ -41,17 +41,38 @@ export const optionalUuidSchema = z.preprocess(
   emptyToUndefined,
   uuidSchema.optional(),
 );
+/** Shown under the password field when any strength rule fails. */
+export const PASSWORD_REQUIREMENTS_MESSAGE =
+  "Password must be at least 8 characters, include one special character, one number, and one uppercase letter.";
+
 /** Strong password: 8+ chars, upper, lower, number, special. */
 export const passwordSchema = z
   .string()
-  .min(8, "Password must be at least 8 characters.")
   .max(128, "Password is too long.")
-  .regex(/[a-z]/, "Password must include a lowercase letter.")
-  .regex(/[A-Z]/, "Password must include an uppercase letter.")
-  .regex(/[0-9]/, "Password must include a number.")
+  .superRefine((value, context) => {
+    const strong =
+      value.length >= 8 &&
+      /[a-z]/.test(value) &&
+      /[A-Z]/.test(value) &&
+      /[0-9]/.test(value) &&
+      /[^A-Za-z0-9]/.test(value);
+    if (!strong) {
+      context.addIssue({
+        code: "custom",
+        message: PASSWORD_REQUIREMENTS_MESSAGE,
+      });
+    }
+  });
+
+/** Display / handle name used as the Portl username. */
+export const usernameSchema = z
+  .string()
+  .trim()
+  .min(3, "Username must be at least 3 characters.")
+  .max(32, "Username must be at most 32 characters.")
   .regex(
-    /[^A-Za-z0-9]/,
-    "Password must include a special character (e.g. !@#$%).",
+    /^[a-zA-Z0-9._]+$/,
+    "Username can only use letters, numbers, dots, and underscores.",
   );
 
 export type PasswordStrengthRule = {
@@ -104,6 +125,28 @@ export const authIdentitySchema = z.discriminatedUnion("type", [
 export const emailPasswordSchema = z.strictObject({
   email: emailSchema,
   password: passwordSchema,
+});
+/** Email/username + password sign-in (phone is never a sign-in method). */
+export const signInIdentifierSchema = z
+  .string()
+  .trim()
+  .min(3, "Enter your email or username.")
+  .max(254, "Identifier is too long.");
+export const signInFormSchema = z.strictObject({
+  identifier: signInIdentifierSchema,
+  password: z.string().min(1, "Enter your password."),
+});
+/** Full registration form — phone is contact-only, not used for sign-in. */
+export const signUpFormSchema = z.strictObject({
+  username: usernameSchema,
+  email: emailSchema,
+  password: passwordSchema,
+  phone: phoneSchema,
+});
+/** Google users fill remaining required profile fields before entering the app. */
+export const profileCompletionSchema = z.strictObject({
+  username: usernameSchema,
+  phone: phoneSchema,
 });
 export const resetPasswordSchema = z.strictObject({
   password: passwordSchema,

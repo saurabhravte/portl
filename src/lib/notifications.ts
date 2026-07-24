@@ -11,6 +11,7 @@
  * single biggest lever on approval latency.
  */
 import Constants from "expo-constants";
+import { isRunningInExpoGo } from "expo";
 import * as Device from "expo-device";
 import * as Notifications from "expo-notifications";
 import { Platform } from "react-native";
@@ -23,6 +24,11 @@ import {
   uuidSchema,
 } from "./validation";
 import { z } from "zod";
+
+/** Remote push (Expo push tokens) is unavailable in Expo Go on Android SDK 53+. */
+function canUseRemotePush() {
+  return !isRunningInExpoGo();
+}
 
 export const GATE_CHANNEL_ID = "gate";
 export const DEFAULT_CHANNEL_ID = "default";
@@ -79,7 +85,8 @@ export async function registerPushToken(
   _userId: string,
 ) {
   // Web has no Expo push tokens; emulators can't receive remote push.
-  if (Platform.OS === "web" || !Device.isDevice) return;
+  // Expo Go cannot register remote push on Android (SDK 53+).
+  if (Platform.OS === "web" || !Device.isDevice || !canUseRemotePush()) return;
   const { status: existing } = await Notifications.getPermissionsAsync();
   let status = existing;
   if (existing !== "granted") {
@@ -144,6 +151,9 @@ export function addExpoPushTokenRolloverListener(
   supabase: AppSupabaseClient,
   userId: string,
 ) {
+  if (!canUseRemotePush()) {
+    return { remove() {} };
+  }
   return Notifications.addPushTokenListener(() => {
     const previousToken = currentDeviceExpoPushToken;
     void registerPushToken(supabase, userId)

@@ -9,6 +9,9 @@ import { Button, Screen } from "@/components/ui";
 import { getVerifiedPrimaryIdentity } from "@/features/auth/identity";
 import { useSessionRestorationRouting } from "@/features/auth/sessionRouting";
 import {
+  getContactPhoneFromMetadata,
+} from "@/features/auth/profileCompletion";
+import {
   heartbeatGuardDeviceSession,
   registerGuardDeviceSession,
 } from "@/lib/guardDevice";
@@ -205,6 +208,29 @@ function RoleGate({ children }: { children: React.ReactNode }) {
       }
 
       if (prof) {
+        const contactPhone = getContactPhoneFromMetadata(user);
+        const preferredName = user.username?.trim() || undefined;
+        if (contactPhone || preferredName) {
+          const { data: patched, error: patchError } = await supabase.rpc(
+            "update_my_profile",
+            {
+              p_name: preferredName,
+              p_phone: contactPhone ?? undefined,
+            },
+          );
+          if (!cancelled && !patchError && patched && typeof patched === "object") {
+            const patch = patched as {
+              name?: string;
+              phone?: string | null;
+            };
+            prof = {
+              ...prof,
+              name: typeof patch.name === "string" ? patch.name : prof.name,
+              phone:
+                patch.phone !== undefined ? patch.phone : prof.phone,
+            };
+          }
+        }
         setLinkedProfile(prof);
         registerPushToken(supabase, user.id).catch(() => {});
       } else {

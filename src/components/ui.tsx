@@ -359,20 +359,45 @@ export function Field(
     className?: string;
     /** Inline validation message (#9). Pairs with useZodForm. */
     error?: string;
+    /** Show an eye toggle when `secureTextEntry` is used. */
+    secureToggle?: boolean;
   },
 ) {
-  const { label, className, error, ...rest } = props;
+  const { label, className, error, secureToggle, secureTextEntry, ...rest } =
+    props;
+  const colors = useThemeColors();
+  const [revealed, setRevealed] = React.useState(false);
+  const isSecure = !!secureTextEntry && !(secureToggle && revealed);
+
   return (
     <View className="gap-1">
       {label ? <Text className="text-label text-ink">{label}</Text> : null}
-      <TextInput
-        placeholderTextColorClassName="text-ink-faint"
-        accessibilityState={{ disabled: rest.editable === false }}
-        className={`min-h-11 rounded-md border bg-surface-alt px-4 text-base text-ink ${
-          error ? "border-deny" : "border-border"
-        } ${className ?? ""}`}
-        {...rest}
-      />
+      <View className="relative justify-center">
+        <TextInput
+          placeholderTextColorClassName="text-ink-faint"
+          accessibilityState={{ disabled: rest.editable === false }}
+          secureTextEntry={isSecure}
+          className={`min-h-11 rounded-md border bg-surface-alt px-4 text-base text-ink ${
+            secureToggle && secureTextEntry ? "pr-12" : ""
+          } ${error ? "border-deny" : "border-border"} ${className ?? ""}`}
+          {...rest}
+        />
+        {secureToggle && secureTextEntry ? (
+          <Pressable
+            accessibilityRole="button"
+            accessibilityLabel={revealed ? "Hide password" : "Show password"}
+            onPress={() => setRevealed((v) => !v)}
+            className="absolute right-3 h-11 items-center justify-center px-1"
+            hitSlop={8}
+          >
+            <Ionicons
+              name={revealed ? "eye-off-outline" : "eye-outline"}
+              size={20}
+              color={colors.inkMuted}
+            />
+          </Pressable>
+        ) : null}
+      </View>
       {error ? (
         <Text accessibilityRole="alert" className="text-caption text-deny">
           {error}

@@ -1,5 +1,5 @@
 import { renderHook, waitFor } from "@testing-library/react-native";
-import { useAuth } from "@clerk/expo";
+import { useAuth, useUser } from "@clerk/expo";
 import { useRouter, useSegments } from "expo-router";
 import {
   ROLE_HOME,
@@ -18,15 +18,17 @@ const profile = {
   role: "resident" as const,
   flat_id: "flat-a",
   name: "Resident",
-  phone: null,
+  phone: "+919876543210",
   expo_push_token: null,
 };
 type RoutingProps = Parameters<typeof useSessionRestorationRouting>[0];
 
 describe("Clerk session restoration routing", () => {
   beforeEach(() => {
+    replace.mockClear();
     (useRouter as jest.Mock).mockReturnValue({ replace });
     (useSegments as jest.Mock).mockReturnValue(["index"]);
+    (useUser as jest.Mock).mockReturnValue({ user: null });
   });
 
   it("waits for Clerk, then restores a linked user directly to role home", async () => {
@@ -58,7 +60,9 @@ describe("Clerk session restoration routing", () => {
       profile,
     });
 
-    await waitFor(() => expect(replace).toHaveBeenCalledWith(ROLE_HOME.resident));
+    await waitFor(() =>
+      expect(replace).toHaveBeenCalledWith(ROLE_HOME.resident),
+    );
   });
 
   it("keeps onboarding before auth and sends returning signed-out users to sign-in", async () => {
@@ -89,6 +93,35 @@ describe("Clerk session restoration routing", () => {
     });
     await waitFor(() =>
       expect(replace).toHaveBeenLastCalledWith("/(auth)/sign-in"),
+    );
+  });
+
+  it("sends Google users missing phone to complete-profile", async () => {
+    (useAuth as jest.Mock).mockReturnValue({
+      isLoaded: true,
+      isSignedIn: true,
+    });
+    (useUser as jest.Mock).mockReturnValue({
+      user: {
+        username: null,
+        externalAccounts: [
+          { provider: "google", verification: { status: "verified" } },
+        ],
+      },
+    });
+    (useSegments as jest.Mock).mockReturnValue(["(resident)", "home"]);
+
+    renderHook(() =>
+      useSessionRestorationRouting({
+        onboardingReady: true,
+        onboardingDone: true,
+        profileStatus: "linked",
+        profile: { ...profile, phone: null, name: "Ada Lovelace" },
+      }),
+    );
+
+    await waitFor(() =>
+      expect(replace).toHaveBeenCalledWith("/(auth)/complete-profile"),
     );
   });
 });

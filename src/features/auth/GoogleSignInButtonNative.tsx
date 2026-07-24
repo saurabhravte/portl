@@ -9,7 +9,6 @@ import {
   Alert,
   Pressable,
   Text,
-  View,
 } from "react-native";
 
 type Props = {
@@ -70,30 +69,23 @@ export function GoogleSignInButtonNative({
   };
 
   return (
-    <View className="gap-3">
-      <Pressable
-        accessibilityRole="button"
-        accessibilityLabel={label}
-        disabled={disabled || busy}
-        onPress={() => void onPress()}
-        className={`min-h-11 flex-row items-center justify-center gap-2 rounded-md border border-border bg-surface px-4 py-3 ${
-          disabled || busy ? "opacity-50" : "active:opacity-80"
-        }`}
-      >
-        {busy ? (
-          <ActivityIndicator color={colors.primary} />
-        ) : (
-          <>
-            <AppIcon name="google" size={20} color={colors.ink} />
-            <Text className="text-label text-ink">{label}</Text>
-          </>
-        )}
-      </Pressable>
-      <View className="flex-row items-center gap-3">
-        <View className="h-px flex-1 bg-border" />
-        <Text className="text-caption text-ink-muted">or</Text>
-        <View className="h-px flex-1 bg-border" />
-      </View>
-    </View>
+    <Pressable
+      accessibilityRole="button"
+      accessibilityLabel={label}
+      disabled={disabled || busy}
+      onPress={() => void onPress()}
+      className={`min-h-11 flex-row items-center justify-center gap-2 rounded-md border border-border bg-surface px-4 py-3 ${
+        disabled || busy ? "opacity-50" : "active:opacity-80"
+      }`}
+    >
+      {busy ? (
+        <ActivityIndicator color={colors.primary} />
+      ) : (
+        <>
+          <AppIcon name="google" size={20} color={colors.ink} />
+          <Text className="text-label text-ink">{label}</Text>
+        </>
+      )}
+    </Pressable>
   );
 }

@@ -6,6 +6,36 @@ const path = require("path");
 
 const config = getSentryExpoConfig(__dirname);
 const projectRoot = path.resolve(__dirname);
+const expoGoPushWarnShim = path.resolve(
+  projectRoot,
+  "metro-shims/warnOfExpoGoPushUsage.js",
+);
+
+// Expo Go Android throws when expo-notifications registers push-token listeners.
+// Remap that helper so local Expo Go can boot; push still needs a dev build.
+const previousResolveRequest = config.resolver?.resolveRequest;
+config.resolver = {
+  ...config.resolver,
+  resolveRequest(context, moduleName, platform) {
+    if (
+      moduleName === "./warnOfExpoGoPushUsage" ||
+      moduleName === "./warnOfExpoGoPushUsage.js" ||
+      moduleName.endsWith("/warnOfExpoGoPushUsage") ||
+      moduleName.endsWith("/warnOfExpoGoPushUsage.js")
+    ) {
+      const fromNotifications = context.originModulePath.includes(
+        `${path.sep}expo-notifications${path.sep}`,
+      );
+      if (fromNotifications) {
+        return { type: "sourceFile", filePath: expoGoPushWarnShim };
+      }
+    }
+    if (typeof previousResolveRequest === "function") {
+      return previousResolveRequest(context, moduleName, platform);
+    }
+    return context.resolveRequest(context, moduleName, platform);
+  },
+};
 
 // Escape Windows paths for use inside a RegExp.
 function escapeRegex(value) {

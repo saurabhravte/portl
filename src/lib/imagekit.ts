@@ -68,7 +68,6 @@ export async function uploadToImageKit(
   const form = new FormData();
   // React Native file part.
   form.append("file", {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     uri: asset.uri,
     name: fileName,
     type: asset.contentType,

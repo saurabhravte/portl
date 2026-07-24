@@ -1,13 +1,8 @@
 import { Button, Field, Screen } from "@/components/ui";
-import { AuthMethodPicker } from "@/features/auth/AuthMethodPicker";
 import { PasswordStrengthHints } from "@/features/auth/PasswordStrengthHints";
+import { clerkErrorMessage } from "@/features/auth/identity";
 import {
-  clerkErrorMessage,
-  type IdentityType,
-  isValidIdentity,
-} from "@/features/auth/identity";
-import {
-  authIdentitySchema,
+  emailSchema,
   getPasswordStrength,
   parseInput,
   resetPasswordSchema,
@@ -20,13 +15,15 @@ import { Alert, Text } from "react-native";
 
 type Stage = "identifier" | "code" | "password";
 
+/** Password reset is email-only — phone is never a Portl sign-in method. */
 export default function ForgotPassword() {
   const { signIn } = useSignIn();
   const router = useRouter();
-  const [method, setMethod] = useState<IdentityType>("email");
-  const [identifier, setIdentifier] = useState("");
+  const [email, setEmail] = useState("");
+  const [emailError, setEmailError] = useState<string | undefined>();
   const [code, setCode] = useState("");
   const [password, setPassword] = useState("");
+  const [passwordError, setPasswordError] = useState<string | undefined>();
   const [stage, setStage] = useState<Stage>("identifier");
   const [busy, setBusy] = useState(false);
 
@@ -34,6 +31,7 @@ export default function ForgotPassword() {
     signIn?.reset();
     setCode("");
     setPassword("");
+    setPasswordError(undefined);
     setStage("identifier");
   };
 
@@ -42,27 +40,26 @@ export default function ForgotPassword() {
     setBusy(true);
     try {
       if (!resend) {
-        const identity = parseInput(authIdentitySchema, {
-          type: method,
-          value: identifier,
-        });
+        const parsedEmail = parseInput(emailSchema, email);
+        setEmailError(undefined);
         const { error } = await signIn.create({
-          identifier: identity.value,
+          identifier: parsedEmail,
         });
         if (error) throw error;
       }
-      const { error } =
-        method === "email"
-          ? await signIn.resetPasswordEmailCode.sendCode()
-          : await signIn.resetPasswordPhoneCode.sendCode();
+      const { error } = await signIn.resetPasswordEmailCode.sendCode();
       if (error) throw error;
       setStage("code");
       if (resend) Alert.alert("Code sent", "A new reset code is on its way.");
     } catch (error) {
-      Alert.alert(
-        "Could not send reset code",
-        clerkErrorMessage(error, "Check your details and try again."),
-      );
+      if (error instanceof Error && /email/i.test(error.message)) {
+        setEmailError(error.message);
+      } else {
+        Alert.alert(
+          "Could not send reset code",
+          clerkErrorMessage(error, "Check your email and try again."),
+        );
+      }
     } finally {
       setBusy(false);
     }
@@ -73,10 +70,9 @@ export default function ForgotPassword() {
     setBusy(true);
     try {
       const parsedCode = parseInput(verificationCodeSchema, code);
-      const { error } =
-        method === "email"
-          ? await signIn.resetPasswordEmailCode.verifyCode({ code: parsedCode })
-          : await signIn.resetPasswordPhoneCode.verifyCode({ code: parsedCode });
+      const { error } = await signIn.resetPasswordEmailCode.verifyCode({
+        code: parsedCode,
+      });
       if (error) throw error;
       if (signIn.status !== "needs_new_password") {
         throw new Error("Password reset could not continue.");
@@ -97,16 +93,11 @@ export default function ForgotPassword() {
     setBusy(true);
     try {
       const parsed = parseInput(resetPasswordSchema, { password });
-      const { error } =
-        method === "email"
-          ? await signIn.resetPasswordEmailCode.submitPassword({
-              password: parsed.password,
-              signOutOfOtherSessions: true,
-            })
-          : await signIn.resetPasswordPhoneCode.submitPassword({
-              password: parsed.password,
-              signOutOfOtherSessions: true,
-            });
+      setPasswordError(undefined);
+      const { error } = await signIn.resetPasswordEmailCode.submitPassword({
+        password: parsed.password,
+        signOutOfOtherSessions: true,
+      });
       if (error) throw error;
       if (signIn.status !== "complete") {
         throw new Error("This account requires another sign-in factor.");
@@ -115,10 +106,14 @@ export default function ForgotPassword() {
       if (finalizeError) throw finalizeError;
       router.replace("/");
     } catch (error) {
-      Alert.alert(
-        "Could not reset password",
-        clerkErrorMessage(error, "Choose a different password and try again."),
-      );
+      if (error instanceof Error && /Password must/i.test(error.message)) {
+        setPasswordError(error.message);
+      } else {
+        Alert.alert(
+          "Could not reset password",
+          clerkErrorMessage(error, "Choose a different password and try again."),
+        );
+      }
     } finally {
       setBusy(false);
     }
@@ -130,25 +125,23 @@ export default function ForgotPassword() {
       {stage === "identifier" ? (
         <>
           <Text className="text-body text-ink-soft">
-            We’ll send a reset code to a verified identifier on your account.
+            We’ll send a reset code to the email on your account.
           </Text>
-          <AuthMethodPicker value={method} onChange={setMethod} disabled={busy} />
           <Field
-            label={method === "email" ? "Email" : "Phone number"}
-            value={identifier}
-            onChangeText={setIdentifier}
+            label="Email"
+            value={email}
+            onChangeText={setEmail}
+            error={emailError}
             autoCapitalize="none"
-            keyboardType={method === "email" ? "email-address" : "phone-pad"}
-            textContentType={
-              method === "email" ? "emailAddress" : "telephoneNumber"
-            }
-            placeholder={method === "email" ? "you@example.com" : "+91 98765 43210"}
+            keyboardType="email-address"
+            textContentType="emailAddress"
+            placeholder="you@example.com"
           />
           <Button
             title="Send reset code"
-            onPress={() => sendCode()}
+            onPress={() => void sendCode()}
             loading={busy}
-            disabled={!isValidIdentity(method, identifier)}
+            disabled={!email.trim()}
           />
           <Button
             title="Back to sign in"
@@ -174,14 +167,14 @@ export default function ForgotPassword() {
           />
           <Button
             title="Verify code"
-            onPress={verifyCode}
+            onPress={() => void verifyCode()}
             loading={busy}
             disabled={code.length < 6}
           />
           <Button
             title="Resend code"
             variant="ghost"
-            onPress={() => sendCode(true)}
+            onPress={() => void sendCode(true)}
             disabled={busy}
           />
           <Button
@@ -196,14 +189,16 @@ export default function ForgotPassword() {
       {stage === "password" ? (
         <>
           <Text className="text-body text-ink-soft">
-            Choose a strong password: 8+ characters with uppercase, lowercase,
-            number, and special character.
+            Choose a strong password: 8+ characters with uppercase, number, and
+            special character.
           </Text>
           <Field
             label="New password"
             value={password}
             onChangeText={setPassword}
+            error={passwordError}
             secureTextEntry
+            secureToggle
             autoComplete="new-password"
             textContentType="newPassword"
             autoFocus
@@ -211,7 +206,7 @@ export default function ForgotPassword() {
           <PasswordStrengthHints password={password} />
           <Button
             title="Set new password"
-            onPress={setNewPassword}
+            onPress={() => void setNewPassword()}
             loading={busy}
             disabled={!getPasswordStrength(password).isStrong}
           />

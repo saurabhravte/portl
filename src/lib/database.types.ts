@@ -4628,7 +4628,11 @@ export type Database = {
         Returns: undefined
       }
       update_my_profile: {
-        Args: { p_expo_push_token?: string; p_name?: string }
+        Args: {
+          p_expo_push_token?: string
+          p_name?: string
+          p_phone?: string
+        }
         Returns: Json
       }
       upsert_event_rsvp: {

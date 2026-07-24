@@ -605,7 +605,7 @@ export function useAmenityUsageStats(days = 30) {
         waitlist_waiting: number;
         revenue: number;
         penalties_due: number;
-        by_amenity: Array<{
+        by_amenity: {
           amenity_id: string;
           amenity_name: string;
           bookings: number;
@@ -614,7 +614,7 @@ export function useAmenityUsageStats(days = 30) {
           no_shows: number;
           checked_in: number;
           revenue: number;
-        }>;
+        }[];
       };
     },
   });

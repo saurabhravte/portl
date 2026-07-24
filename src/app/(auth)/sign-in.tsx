@@ -1,33 +1,41 @@
 import { BrandMark } from "@/components/BrandMark";
 import { Button, Field, Screen } from "@/components/ui";
-import { AuthMethodPicker } from "@/features/auth/AuthMethodPicker";
+import {
+  AuthFooterLegal,
+  AuthOrDivider,
+} from "@/features/auth/AuthChrome";
 import { GoogleSignInButton, GoogleSignInExpoGoHint } from "@/features/auth/GoogleSignInButton";
+import { clerkErrorMessage } from "@/features/auth/identity";
+import { useZodForm } from "@/lib/useZodForm";
 import {
-  clerkErrorMessage,
-  type IdentityType,
-  isValidIdentity,
-} from "@/features/auth/identity";
-import {
-  emailPasswordSchema,
   parseInput,
-  phoneSchema,
+  signInFormSchema,
   verificationCodeSchema,
 } from "@/lib/validation";
 import { useSignIn } from "@clerk/expo";
 import { Link, useRouter } from "expo-router";
 import React, { useState } from "react";
-import { Alert, Pressable, Text } from "react-native";
+import {
+  Alert,
+  KeyboardAvoidingView,
+  Platform,
+  Pressable,
+  ScrollView,
+  Text,
+  View,
+} from "react-native";
 
-type Stage = "form" | "phone-code" | "client-trust";
+type Stage = "form" | "client-trust";
 
 export default function SignIn() {
   const { signIn } = useSignIn();
   const router = useRouter();
-  const [method, setMethod] = useState<IdentityType>("phone");
-  const [identifier, setIdentifier] = useState("");
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
+  const form = useZodForm(signInFormSchema, {
+    identifier: "",
+    password: "",
+  });
   const [code, setCode] = useState("");
+  const [codeError, setCodeError] = useState<string | undefined>();
   const [stage, setStage] = useState<Stage>("form");
   const [busy, setBusy] = useState(false);
 
@@ -40,64 +48,50 @@ export default function SignIn() {
     router.replace("/");
   };
 
-  const onEmailSignIn = async () => {
-    if (!signIn) return;
-    setBusy(true);
-    try {
-      const credentials = parseInput(emailPasswordSchema, { email, password });
-      const { error } = await signIn.password({
-        emailAddress: credentials.email,
-        password: credentials.password,
-      });
-      if (error) throw error;
+  const onSignIn = () => {
+    form.submit((data) => {
+      void (async () => {
+        if (!signIn) return;
+        setBusy(true);
+        try {
+          const identifier = data.identifier.includes("@")
+            ? data.identifier.toLowerCase()
+            : data.identifier;
+          const { error } = await signIn.password({
+            identifier,
+            password: data.password,
+          });
+          if (error) throw error;
 
-      if (signIn.status === "complete") {
-        await finish();
-        return;
-      }
-      if (signIn.status === "needs_client_trust") {
-        const factor = signIn.supportedSecondFactors.find(
-          (candidate) => candidate.strategy === "email_code",
-        );
-        if (!factor) throw new Error("No supported verification method found.");
-        const { error: sendError } = await signIn.mfa.sendEmailCode();
-        if (sendError) throw sendError;
-        setCode("");
-        setStage("client-trust");
-        return;
-      }
-      throw new Error("This account requires an additional sign-in factor.");
-    } catch (error) {
-      Alert.alert(
-        "Sign in failed",
-        clerkErrorMessage(error, "Check your email and password."),
-      );
-    } finally {
-      setBusy(false);
-    }
-  };
-
-  const sendPhoneCode = async () => {
-    if (!signIn) return;
-    setBusy(true);
-    try {
-      const phoneNumber = parseInput(phoneSchema, identifier);
-      const { error: createError } = await signIn.create({
-        identifier: phoneNumber,
-      });
-      if (createError) throw createError;
-      const { error } = await signIn.phoneCode.sendCode({ phoneNumber });
-      if (error) throw error;
-      setCode("");
-      setStage("phone-code");
-    } catch (error) {
-      Alert.alert(
-        "Could not send code",
-        clerkErrorMessage(error, "Check the phone number and try again."),
-      );
-    } finally {
-      setBusy(false);
-    }
+          if (signIn.status === "complete") {
+            await finish();
+            return;
+          }
+          if (signIn.status === "needs_client_trust") {
+            const factor = signIn.supportedSecondFactors.find(
+              (candidate) => candidate.strategy === "email_code",
+            );
+            if (!factor) {
+              throw new Error("No supported verification method found.");
+            }
+            const { error: sendError } = await signIn.mfa.sendEmailCode();
+            if (sendError) throw sendError;
+            setCode("");
+            setCodeError(undefined);
+            setStage("client-trust");
+            return;
+          }
+          throw new Error("This account requires an additional sign-in factor.");
+        } catch (error) {
+          Alert.alert(
+            "Sign in failed",
+            clerkErrorMessage(error, "Check your email/username and password."),
+          );
+        } finally {
+          setBusy(false);
+        }
+      })();
+    });
   };
 
   const verifyCode = async () => {
@@ -105,21 +99,20 @@ export default function SignIn() {
     setBusy(true);
     try {
       const parsedCode = parseInput(verificationCodeSchema, code);
-      const result =
-        stage === "phone-code"
-          ? await signIn.phoneCode.verifyCode({ code: parsedCode })
-          : await signIn.mfa.verifyEmailCode({ code: parsedCode });
+      setCodeError(undefined);
+      const result = await signIn.mfa.verifyEmailCode({ code: parsedCode });
       if (result.error) throw result.error;
       await finish();
     } catch (error) {
-      const message = clerkErrorMessage(error, "Check the code and try again.");
-      const wrongCode =
-        /wrong|invalid|incorrect|code/i.test(message) &&
-        !/session/i.test(message);
-      Alert.alert(
-        wrongCode ? "Wrong code" : "Verification failed",
-        message,
-      );
+      if (error instanceof Error && /6-digit/i.test(error.message)) {
+        setCodeError(error.message);
+      } else {
+        const message = clerkErrorMessage(error, "Check the code and try again.");
+        const wrongCode =
+          /wrong|invalid|incorrect|code/i.test(message) &&
+          !/session/i.test(message);
+        Alert.alert(wrongCode ? "Wrong code" : "Verification failed", message);
+      }
     } finally {
       setBusy(false);
     }
@@ -129,14 +122,7 @@ export default function SignIn() {
     if (!signIn) return;
     setBusy(true);
     try {
-      const phoneNumber =
-        stage === "phone-code" ? parseInput(phoneSchema, identifier) : undefined;
-      const { error } =
-        stage === "phone-code"
-          ? await signIn.phoneCode.sendCode({
-              phoneNumber: phoneNumber!,
-            })
-          : await signIn.mfa.sendEmailCode();
+      const { error } = await signIn.mfa.sendEmailCode();
       if (error) throw error;
       Alert.alert("Code sent", "A new verification code is on its way.");
     } catch (error) {
@@ -152,120 +138,122 @@ export default function SignIn() {
   const startOver = () => {
     signIn?.reset();
     setCode("");
+    setCodeError(undefined);
     setStage("form");
   };
 
-  const codeStage = stage !== "form";
-
   return (
-    <Screen className="justify-center gap-4 p-6">
-      <BrandMark
-        size="lg"
-        showWordmark
-        subtitle={
-          codeStage
-            ? "Enter the code we sent you."
-            : "Stay signed in — open Portl anytime, no re-login."
-        }
-      />
-      {codeStage ? (
-        <>
-          <Field
-            label="6-digit code"
-            value={code}
-            onChangeText={setCode}
-            keyboardType="number-pad"
-            textContentType="oneTimeCode"
-            maxLength={6}
-            autoFocus
+    <Screen>
+      <KeyboardAvoidingView
+        className="flex-1"
+        behavior={Platform.OS === "ios" ? "padding" : undefined}
+      >
+        <ScrollView
+          contentContainerClassName="grow justify-center gap-4 p-6"
+          keyboardShouldPersistTaps="handled"
+        >
+          <BrandMark
+            size="lg"
+            showWordmark
+            subtitle={
+              stage === "client-trust"
+                ? "Enter the code we sent you."
+                : "Stay signed in — open Portl anytime."
+            }
           />
-          <Button
-            title="Verify and sign in"
-            onPress={verifyCode}
-            loading={busy}
-            disabled={code.length < 6}
-          />
-          <Button
-            title="Resend code"
-            variant="ghost"
-            onPress={resendCode}
-            disabled={busy}
-          />
-          <Button
-            title="Start over"
-            variant="ghost"
-            onPress={startOver}
-            disabled={busy}
-          />
-        </>
-      ) : (
-        <>
-          <GoogleSignInButton disabled={busy} />
-          <GoogleSignInExpoGoHint />
-          <AuthMethodPicker value={method} onChange={setMethod} disabled={busy} />
-          {method === "phone" ? (
-            <>
+          <Text className="text-center text-title text-ink">
+            {stage === "client-trust" ? "Verify it's you" : "Login Account"}
+          </Text>
+
+          {stage === "client-trust" ? (
+            <View className="gap-4">
               <Field
-                label="Phone number"
-                value={identifier}
-                onChangeText={setIdentifier}
-                autoCapitalize="none"
-                keyboardType="phone-pad"
-                textContentType="telephoneNumber"
-                placeholder="+91 98765 43210"
+                label="6-digit code"
+                value={code}
+                onChangeText={setCode}
+                error={codeError}
+                keyboardType="number-pad"
+                textContentType="oneTimeCode"
+                maxLength={6}
+                autoFocus
               />
               <Button
-                title="Send verification code"
-                onPress={sendPhoneCode}
+                title="Verify and sign in"
+                onPress={() => void verifyCode()}
                 loading={busy}
-                disabled={!isValidIdentity("phone", identifier)}
+                disabled={code.length < 6}
               />
-            </>
+              <Button
+                title="Resend code"
+                variant="ghost"
+                onPress={() => void resendCode()}
+                disabled={busy}
+              />
+              <Button
+                title="Start over"
+                variant="ghost"
+                onPress={startOver}
+                disabled={busy}
+              />
+            </View>
           ) : (
             <>
               <Field
-                label="Email"
-                value={email}
-                onChangeText={setEmail}
+                label="Email or username"
+                value={form.values.identifier}
+                onChangeText={form.setField("identifier")}
+                onBlur={form.blur("identifier")}
+                error={form.errors.identifier}
                 autoCapitalize="none"
-                autoComplete="email"
-                keyboardType="email-address"
-                textContentType="emailAddress"
-                placeholder="you@example.com"
+                autoComplete="username"
+                textContentType="username"
+                placeholder="you@example.com or yourname"
               />
               <Field
                 label="Password"
-                value={password}
-                onChangeText={setPassword}
+                value={form.values.password}
+                onChangeText={form.setField("password")}
+                onBlur={form.blur("password")}
+                error={form.errors.password}
                 secureTextEntry
+                secureToggle
                 autoComplete="current-password"
                 textContentType="password"
                 placeholder="••••••••"
               />
-              <Button
-                title="Sign in"
-                onPress={onEmailSignIn}
-                loading={busy}
-                disabled={!isValidIdentity("email", email) || !password}
-              />
+              <Button title="Sign in" onPress={onSignIn} loading={busy} />
               <Link href={"/(auth)/forgot-password" as any} asChild>
-                <Pressable accessibilityRole="link" className="min-h-11 justify-center">
+                <Pressable
+                  accessibilityRole="link"
+                  className="min-h-11 justify-center"
+                >
                   <Text className="text-center text-label text-ink">
-                    Forgot password?
+                    Forgotten your password?{" "}
+                    <Text className="text-primary">Reset Password</Text>
+                  </Text>
+                </Pressable>
+              </Link>
+
+              <AuthOrDivider label="Or sign in with" />
+              <GoogleSignInButton disabled={busy} />
+              <GoogleSignInExpoGoHint />
+
+              <AuthFooterLegal />
+              <Link href={"/(auth)/sign-up" as any} asChild>
+                <Pressable
+                  accessibilityRole="link"
+                  className="min-h-11 justify-center"
+                >
+                  <Text className="text-center text-label text-ink">
+                    I don't have an account,{" "}
+                    <Text className="text-primary">Sign up</Text>
                   </Text>
                 </Pressable>
               </Link>
             </>
           )}
-          <Link href={"/(auth)/sign-up" as any} asChild>
-            <Pressable accessibilityRole="link" className="min-h-11 justify-center">
-              <Text className="text-center text-label text-ink">
-                New here? Create an account
-              </Text>
-            </Pressable>
-          </Link>
-        </>
-      )}
+        </ScrollView>
+      </KeyboardAvoidingView>
     </Screen>
   );
 }

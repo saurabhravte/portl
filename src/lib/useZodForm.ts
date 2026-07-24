@@ -17,7 +17,7 @@ export function useZodForm<S extends z.ZodType>(
   initial: z.input<S>,
 ) {
   type Values = z.input<S>;
-  type Keys = keyof Values & string;
+  type Keys = Extract<keyof Values, string>;
 
   const [values, setValues] = useState<Values>(initial);
   const [errors, setErrors] = useState<Partial<Record<Keys, string>>>({});
@@ -38,9 +38,11 @@ export function useZodForm<S extends z.ZodType>(
   );
 
   const setField = useCallback(
-    (key: Keys) => (val: Values[Keys]) => {
+    (key: Keys) => (val: Values extends Record<string, unknown> ? Values[Keys] : never) => {
       setValues((prev) => {
-        const next = { ...prev, [key]: val } as Values;
+        const next = Object.assign({}, prev as object, {
+          [key]: val,
+        }) as Values;
         // Re-validate a field only after it's been touched, so users aren't
         // yelled at while first typing.
         setErrors((e) => (touched[key] ? { ...e, [key]: collect(next)[key] } : e));
