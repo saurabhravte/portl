@@ -37,7 +37,11 @@ import { manropeFontMap } from "@/theme/fonts";
 import { useThemeColors } from "@/theme/useThemeColors";
 import { useThemeStore } from "@/stores/theme";
 import { ClerkProvider, useAuth, useClerk, useUser } from "@clerk/expo";
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { onlineManager, QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import NetInfo from "@react-native-community/netinfo";
+import { ConnectionBanner } from "@/components/ConnectionBanner";
+import { Toaster } from "@/components/Toaster";
+import { classifyError } from "@/lib/errors";
 import { useFonts } from "expo-font";
 import * as Notifications from "expo-notifications";
 import { Stack, useRouter } from "expo-router";
@@ -63,8 +67,30 @@ configureNotifications().catch(() => {}); // gate channel + approve/deny actions
 
 SplashScreen.preventAutoHideAsync();
 
+// Let React Query pause/resume with connectivity — powers offline + the
+// automatic refetch when the phone comes back online (#4, #5).
+onlineManager.setEventListener((setOnline) =>
+  NetInfo.addEventListener((state) => {
+    setOnline(state.isConnected !== false && state.isInternetReachable !== false);
+  }),
+);
+
 const queryClient = new QueryClient({
-  defaultOptions: { queries: { retry: 2, staleTime: 15_000 } },
+  defaultOptions: {
+    queries: {
+      staleTime: 15_000,
+      refetchOnReconnect: true,
+      // Never retry auth/permission/not-found — retrying can't fix them and
+      // just delays the correct state. Retry transient/network errors twice.
+      retry: (failureCount, error) => {
+        const kind = classifyError(error).kind;
+        if (kind === "session" || kind === "permission" || kind === "notFound") {
+          return false;
+        }
+        return failureCount < 2;
+      },
+    },
+  },
 });
 
 /** Loads the Supabase profile for the Clerk user and routes by role. */
@@ -365,6 +391,7 @@ function RootLayout() {
         tokenCache={tokenCache}
       >
         <QueryClientProvider client={queryClient}>
+          <ConnectionBanner />
           <RoleGate>
             <StatusBar style={scheme === "dark" ? "light" : "dark"} backgroundColor={colors.paper} />
             <Stack
@@ -374,6 +401,7 @@ function RootLayout() {
               }}
             />
           </RoleGate>
+          <Toaster />
         </QueryClientProvider>
       </ClerkProvider>
     </GestureHandlerRootView>

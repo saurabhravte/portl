@@ -5,8 +5,10 @@ import {
   Card,
   EmptyState,
   Screen,
-  Skeleton,
 } from "@/components/ui";
+import { QueryState } from "@/components/states";
+import { toErrorMessage } from "@/lib/errors";
+import { toast } from "@/stores/toast";
 import { useMarkParcelCollected, useParcels } from "@/features/parcels/hooks";
 import { format } from "date-fns";
 import { useRouter } from "expo-router";
@@ -15,7 +17,8 @@ import { RefreshControl, ScrollView, Text, View } from "react-native";
 
 export default function ResidentParcels() {
   const router = useRouter();
-  const { data, isLoading, isRefetching, refetch } = useParcels("mine");
+  const parcels = useParcels("mine");
+  const { data, isRefetching, refetch } = parcels;
   const collect = useMarkParcelCollected();
 
   return (
@@ -28,39 +31,52 @@ export default function ResidentParcels() {
       >
         <BackControl onPress={() => router.back()} />
         <Text className="text-display text-ink">Packages</Text>
-        {isLoading ? <Skeleton /> : null}
-        {!isLoading && !data?.length ? (
-          <EmptyState
-            title="No packages"
-            hint="When a guard logs a delivery held at the gate, it shows up here."
-          />
-        ) : null}
-        {data?.map((p) => (
-          <Card key={p.id}>
-            <View className="flex-row items-center justify-between">
-              <View className="flex-1">
-                <Text className="text-title text-ink">{p.description}</Text>
-                <Text className="text-caption text-ink-soft">
-                  {p.shelf_label ? `Shelf ${p.shelf_label} · ` : ""}
-                  {format(new Date(p.created_at), "d MMM, h:mm a")}
-                </Text>
+
+        {/* One wrapper handles loading / error / offline / permission / empty. */}
+        <QueryState
+          query={parcels}
+          empty={!data?.length}
+          loadingRows={3}
+          emptyState={
+            <EmptyState
+              icon="delivery"
+              title="No packages"
+              hint="When a guard logs a delivery held at the gate, it shows up here."
+            />
+          }
+        >
+          {data?.map((p) => (
+            <Card key={p.id}>
+              <View className="flex-row items-center justify-between">
+                <View className="flex-1">
+                  <Text className="text-title text-ink">{p.description}</Text>
+                  <Text className="text-caption text-ink-soft">
+                    {p.shelf_label ? `Shelf ${p.shelf_label} · ` : ""}
+                    {format(new Date(p.created_at), "d MMM, h:mm a")}
+                  </Text>
+                </View>
+                <Badge
+                  label={p.status === "collected" ? "Collected" : "At gate"}
+                  tone={p.status === "collected" ? "neutral" : "warn"}
+                />
               </View>
-              <Badge
-                label={p.status === "collected" ? "Collected" : "At gate"}
-                tone={p.status === "collected" ? "neutral" : "warn"}
-              />
-            </View>
-            {p.status === "pending" ? (
-              <Button
-                title="Mark collected"
-                size="sm"
-                variant="secondary"
-                loading={collect.isPending}
-                onPress={() => collect.mutate(p.id)}
-              />
-            ) : null}
-          </Card>
-        ))}
+              {p.status === "pending" ? (
+                <Button
+                  title="Mark collected"
+                  size="sm"
+                  variant="secondary"
+                  loading={collect.isPending}
+                  onPress={() =>
+                    collect.mutate(p.id, {
+                      onSuccess: () => toast.success("Marked as collected"),
+                      onError: (e) => toast.error(toErrorMessage(e)),
+                    })
+                  }
+                />
+              ) : null}
+            </Card>
+          ))}
+        </QueryState>
       </ScrollView>
     </Screen>
   );

@@ -1,40 +1,4 @@
-import {
-  Bell,
-  BellNotification,
-  Book,
-  Building,
-  Calendar,
-  Car,
-  Check,
-  CheckCircle,
-  Clock,
-  Community,
-  CreditCard,
-  DeliveryTruck,
-  Download,
-  Google,
-  Group,
-  HalfMoon,
-  HomeSimple,
-  Iconoir,
-  List,
-  LogOut,
-  MoneySquare,
-  NavArrowLeft,
-  NavArrowRight,
-  Palette,
-  QrCode,
-  Settings,
-  ShieldCheck,
-  SunLight,
-  Swimming,
-  Tools,
-  User,
-  UserPlus,
-  WarningTriangle,
-  Wrench,
-  Xmark,
-} from "iconoir-react-native";
+import { Ionicons } from "@expo/vector-icons";
 import React from "react";
 import {
   ActivityIndicator,
@@ -67,50 +31,57 @@ export function Screen({
   );
 }
 
-/* ── Icons (Iconoir) ───────────────────────────────────────────────────
- * One semantic name per concept; swap the mapping here to restyle the
- * whole app. Icons from https://iconoir.com
+/* ── Icons (@expo/vector-icons — Ionicons) ─────────────────────────────
+ * One semantic name per concept; swap the mapping here to restyle the whole
+ * app. Migrated from iconoir to @expo/vector-icons so icons ship with Expo
+ * (no extra native module, works in Expo Go). Names: https://icons.expo.fyi
  */
-type IconoirComponent = typeof Iconoir;
-
 const ICONS = {
-  home: HomeSimple,
-  visitors: Group,
-  "visitor-add": UserPlus,
-  community: Building,
-  payments: CreditCard,
-  invoice: MoneySquare,
-  download: Download,
-  close: Xmark,
-  profile: User,
-  person: User,
-  bell: Bell,
-  "bell-active": BellNotification,
-  back: NavArrowLeft,
-  next: NavArrowRight,
-  complaints: WarningTriangle,
-  amenities: Swimming,
-  polls: List,
-  directory: Book,
-  helpdesk: Wrench,
-  notices: WarningTriangle,
-  history: Clock,
-  calendar: Calendar,
-  shield: ShieldCheck,
-  qr: QrCode,
-  delivery: DeliveryTruck,
-  cab: Car,
-  check: Check,
-  "check-circle": CheckCircle,
-  settings: Settings,
-  sun: SunLight,
-  moon: HalfMoon,
-  theme: Palette,
-  logout: LogOut,
-  google: Google,
-  tools: Tools,
-  communityPeople: Community,
-} satisfies Record<string, IconoirComponent>;
+  home: "home",
+  visitors: "people",
+  "visitor-add": "person-add",
+  community: "business",
+  payments: "card",
+  invoice: "cash",
+  download: "download",
+  close: "close",
+  profile: "person",
+  person: "person",
+  bell: "notifications-outline",
+  "bell-active": "notifications",
+  back: "chevron-back",
+  next: "chevron-forward",
+  complaints: "warning-outline",
+  amenities: "water",
+  polls: "list",
+  directory: "book",
+  helpdesk: "construct",
+  notices: "megaphone-outline",
+  history: "time-outline",
+  calendar: "calendar-outline",
+  shield: "shield-checkmark",
+  qr: "qr-code",
+  delivery: "cube-outline",
+  cab: "car",
+  check: "checkmark",
+  "check-circle": "checkmark-circle",
+  settings: "settings-outline",
+  sun: "sunny",
+  moon: "moon",
+  theme: "color-palette-outline",
+  logout: "log-out-outline",
+  google: "logo-google",
+  tools: "build-outline",
+  communityPeople: "people-circle-outline",
+  // Added for the app-state components (offline / search / permission / etc.)
+  offline: "cloud-offline-outline",
+  slow: "cellular-outline",
+  search: "search",
+  lock: "lock-closed-outline",
+  alert: "alert-circle",
+  inbox: "file-tray-outline",
+  refresh: "refresh",
+} as const;
 
 export type AppIconName = keyof typeof ICONS;
 
@@ -118,21 +89,19 @@ export function AppIcon({
   name,
   color,
   size = 24,
-  strokeWidth = 1.8,
 }: {
   name: AppIconName;
   color?: string;
   size?: number;
+  /** Accepted for backwards-compat with the old iconoir API; ignored. */
   strokeWidth?: number;
 }) {
   const colors = useThemeColors();
-  const Icon = ICONS[name];
   return (
-    <Icon
-      width={size}
-      height={size}
+    <Ionicons
+      name={ICONS[name] as never}
+      size={size}
       color={color ?? colors.ink}
-      strokeWidth={strokeWidth}
     />
   );
 }
@@ -385,17 +354,30 @@ export function Avatar({
 /* ── Forms ───────────────────────────────────────────────────────────── */
 
 export function Field(
-  props: TextInputProps & { label?: string; className?: string },
+  props: TextInputProps & {
+    label?: string;
+    className?: string;
+    /** Inline validation message (#9). Pairs with useZodForm. */
+    error?: string;
+  },
 ) {
-  const { label, className, ...rest } = props;
+  const { label, className, error, ...rest } = props;
   return (
     <View className="gap-1">
       {label ? <Text className="text-label text-ink">{label}</Text> : null}
       <TextInput
         placeholderTextColorClassName="text-ink-faint"
-        className={`min-h-11 rounded-md border border-border bg-surface-alt px-4 text-base text-ink ${className ?? ""}`}
+        accessibilityState={{ disabled: rest.editable === false }}
+        className={`min-h-11 rounded-md border bg-surface-alt px-4 text-base text-ink ${
+          error ? "border-deny" : "border-border"
+        } ${className ?? ""}`}
         {...rest}
       />
+      {error ? (
+        <Text accessibilityRole="alert" className="text-caption text-deny">
+          {error}
+        </Text>
+      ) : null}
     </View>
   );
 }
@@ -407,14 +389,23 @@ export function EmptyState({
   hint,
   actionLabel,
   onAction,
+  icon,
 }: {
   title: string;
   hint?: string;
   actionLabel?: string;
   onAction?: () => void;
+  /** Optional illustration icon shown above the title. */
+  icon?: AppIconName;
 }) {
+  const colors = useThemeColors();
   return (
     <View className="items-center gap-2 p-8">
+      {icon ? (
+        <View className="mb-1 h-14 w-14 items-center justify-center rounded-pill bg-surface-alt">
+          <AppIcon name={icon} size={26} color={colors.inkMuted} />
+        </View>
+      ) : null}
       <Text className="text-title text-ink">{title}</Text>
       {hint ? (
         <Text className="text-center text-body text-ink-soft">{hint}</Text>
