@@ -1,0 +1,60 @@
+project_id = "portl"
+
+[api]
+enabled = true
+port = 54321
+schemas = ["public", "graphql_public"]
+extra_search_path = ["public", "extensions"]
+max_rows = 1000
+
+[db]
+port = 54322
+shadow_port = 54320
+major_version = 15
+
+[studio]
+enabled = true
+port = 54323
+api_url = "http://127.0.0.1"
+
+[storage]
+enabled = true
+file_size_limit = "50MiB"
+
+[auth]
+enabled = true
+site_url = "http://127.0.0.1:3000"
+additional_redirect_urls = ["portl://"]
+jwt_expiry = 3600
+enable_signup = true
+
+# The gateway intentionally skips Supabase JWT verification because scheduled
+# worker calls authenticate with X-Webhook-Secret inside each function.
+[functions.send-push]
+verify_jwt = false
+
+[functions.process-push-receipts]
+verify_jwt = false
+
+# Clerk JWTs are validated by the function's user-scoped Supabase query before
+# the privileged Clerk secret is used.
+[functions.revoke-guard-session]
+verify_jwt = false
+
+[functions.imagekit-auth]
+verify_jwt = false
+
+# Clerk JWT authorization is proven through a user-scoped PostgREST request.
+[functions.privacy-request]
+verify_jwt = false
+
+# Scheduled workers authenticate with the server-only PRIVACY_WORKER_SECRET.
+[functions.privacy-worker]
+verify_jwt = false
+
+[functions.retention-worker]
+verify_jwt = false
+
+# Clerk JWT is validated via a user-scoped profile read before service-role work.
+[functions.iot-gate-command]
+verify_jwt = false

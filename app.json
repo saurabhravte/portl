@@ -1,0 +1,91 @@
+{
+  "expo": {
+    "name": "portl",
+    "owner": "saurabhravte",
+    "slug": "portl",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/expo-app-icon-1024.png",
+    "scheme": "portl",
+    "userInterfaceStyle": "light",
+    "ios": {
+      "icon": "./assets/images/icon.png",
+      "supportsTablet": true,
+      "config": {
+        "usesNonExemptEncryption": false
+      }
+    },
+    "android": {
+      "adaptiveIcon": {
+        "backgroundColor": "#FAFAFA",
+        "foregroundImage": "./assets/images/android-icon-foreground.png",
+        "backgroundImage": "./assets/images/android-icon-background.png",
+        "monochromeImage": "./assets/images/android-icon-monochrome.png"
+      },
+      "predictiveBackGestureEnabled": false
+    },
+    "web": {
+      "output": "static",
+      "favicon": "./assets/images/favicon.png"
+    },
+    "plugins": [
+      "expo-router",
+      [
+        "expo-splash-screen",
+        {
+          "backgroundColor": "#0A1018",
+          "image": "./assets/images/splash-icon.png",
+          "imageWidth": 180,
+          "android": {
+            "image": "./assets/images/splash-icon.png",
+            "imageWidth": 180
+          }
+        }
+      ],
+      "@clerk/expo",
+      [
+        "expo-secure-store",
+        {
+          "configureAndroidBackup": true
+        }
+      ],
+      "expo-web-browser",
+      "expo-image",
+      "expo-sharing",
+      "expo-notifications",
+      [
+        "expo-image-picker",
+        {
+          "photosPermission": "Portl needs photos for visitor and ticket attachments.",
+          "cameraPermission": "Portl needs the camera for visitor and ticket photos."
+        }
+      ],
+      [
+        "expo-camera",
+        {
+          "cameraPermission": "Portl needs the camera to scan visitor QR gate codes.",
+          "microphonePermission": false,
+          "recordAudioAndroid": false
+        }
+      ],
+      [
+        "expo-local-authentication",
+        {
+          "faceIDPermission": "Portl uses Face ID to confirm sensitive gate and privacy actions."
+        }
+      ],
+      "@react-native-community/datetimepicker"
+    ],
+    "experiments": {
+      "typedRoutes": true,
+      "reactCompiler": true
+    },
+    "extra": {
+      "appEnvironment": "development",
+      "router": {},
+      "eas": {
+        "projectId": "c9e2dcbc-7e14-470d-9d6a-c82defa4d6f7"
+      }
+    }
+  }
+}
