@@ -48,12 +48,12 @@ Designed for Indian apartment societies at scale, Portl ships role-specific expe
 
 ## The Problem
 
-| Pain point | Impact |
-| --- | --- |
+| Pain point                     | Impact                                                                                         |
+| ------------------------------ | ---------------------------------------------------------------------------------------------- |
 | Gate intercoms and phone calls | Residents miss calls; visitors wait; guards repeat the same workflow dozens of times per shift |
-| WhatsApp groups for approvals | No audit trail, no role separation, no escalation when someone is unavailable |
-| Paper visitor registers | Impossible to search, report on, or reconcile after the fact |
-| Disconnected society ops | Notices, dues, complaints, and amenity bookings live in separate channels |
+| WhatsApp groups for approvals  | No audit trail, no role separation, no escalation when someone is unavailable                  |
+| Paper visitor registers        | Impossible to search, report on, or reconcile after the fact                                   |
+| Disconnected society ops       | Notices, dues, complaints, and amenity bookings live in separate channels                      |
 
 Communities lose time, security visibility, and trust — not because staff are inefficient, but because the tools were never built for how gates actually work.
 
@@ -99,15 +99,15 @@ Beyond the gate, the same app handles helpdesk tickets, community notices, polls
 
 ### Platform Highlights
 
-| Capability | Detail |
-| --- | --- |
-| **Security-first** | Clerk authentication + Supabase RLS on every table |
-| **Real-time gate flow** | Live updates across guard and resident devices |
-| **Auto-escalation** | Unanswered visitor requests escalate automatically |
-| **Offline resilience** | Queued actions sync when connectivity returns |
-| **Payments** | Razorpay integration for maintenance dues |
-| **Push notifications** | Expo Push via Supabase Edge Functions |
-| **Production-ready** | EAS Build, OTA updates, Sentry monitoring, SQL RLS tests |
+| Capability              | Detail                                                   |
+| ----------------------- | -------------------------------------------------------- |
+| **Security-first**      | Clerk authentication + Supabase RLS on every table       |
+| **Real-time gate flow** | Live updates across guard and resident devices           |
+| **Auto-escalation**     | Unanswered visitor requests escalate automatically       |
+| **Offline resilience**  | Queued actions sync when connectivity returns            |
+| **Payments**            | Razorpay integration for maintenance dues                |
+| **Push notifications**  | Expo Push via Supabase Edge Functions                    |
+| **Production-ready**    | EAS Build, OTA updates, Sentry monitoring, SQL RLS tests |
 
 ---
 
@@ -129,7 +129,7 @@ sequenceDiagram
     S->>S: Audit log persisted
 ```
 
-**Hero flow:** Guard taps *New Visitor* → Resident gets notified → taps *Approve* → Guard's screen updates live → *Mark Entry* / *Mark Exit*. If the resident does not respond in time, the request auto-escalates.
+**Hero flow:** Guard taps _New Visitor_ → Resident gets notified → taps _Approve_ → Guard's screen updates live → _Mark Entry_ / _Mark Exit_. If the resident does not respond in time, the request auto-escalates.
 
 ---
 
@@ -137,36 +137,24 @@ sequenceDiagram
 
 ### Try the App
 
-| Resource | Link |
-| --- | --- |
-| **Android APK** | `<YOUR_EAS_BUILD_LINK>` |
-| **Demo video** | `<YOUR_DEMO_VIDEO_URL>` |
+| Resource        | Link                                                |
+| --------------- | --------------------------------------------------- |
+| **Android APK** | `<YOUR_EAS_BUILD_LINK>`                             |
+| **Demo video**  | `<YOUR_DEMO_VIDEO_URL>`                             |
 | **Screenshots** | Add images to `/screenshots` and update paths below |
 
-> After running an EAS `preview` build, paste the download link above. Open on Android → download `.apk` → allow *Install unknown apps* → install.
-
-### Demo Credentials
-
-Portl uses **Clerk** for authentication. Create one user per role in your Clerk instance, then share credentials with reviewers:
-
-| Role | Login (email or phone) | Password / OTP |
-| --- | --- | --- |
-| Resident | `<resident login>` | `<password>` |
-| Security Guard | `<guard login>` | `<password>` |
-| Society Admin | `<admin login>` | `<password>` |
-
-The bundled demo fixture seeds society **Sunrise Heights**, flat **A-101**, a pending delivery request, an open ticket, a notice, a poll, a due, and pre-approval code **`424242`** — so the full story is ready on first sign-in.
+> After running an EAS `preview` build, paste the download link above. Open on Android → download `.apk` → allow _Install unknown apps_ → install.
 
 ### Screenshots
 
 > Add screenshots to a `/screenshots` folder and update the paths below.
 
-| Resident — Approval | Guard — Gate | Admin — Dashboard |
-| :---: | :---: | :---: |
+|            Resident — Approval             |             Guard — Gate             |             Admin — Dashboard             |
+| :----------------------------------------: | :----------------------------------: | :---------------------------------------: |
 | ![Resident](screenshots/resident-home.png) | ![Guard](screenshots/guard-gate.png) | ![Admin](screenshots/admin-dashboard.png) |
 
-| Pre-approval QR | Helpdesk | Notices & Polls |
-| :---: | :---: | :---: |
+|                Pre-approval QR                |               Helpdesk                |             Notices & Polls             |
+| :-------------------------------------------: | :-----------------------------------: | :-------------------------------------: |
 | ![Pre-approval](screenshots/pre-approval.png) | ![Helpdesk](screenshots/helpdesk.png) | ![Community](screenshots/community.png) |
 
 ---
@@ -199,19 +187,19 @@ The bundled demo fixture seeds society **Sunrise Heights**, flat **A-101**, a pe
 
 ## Tech Stack
 
-| Layer | Technology |
-| --- | --- |
-| **Mobile** | Expo SDK 55, React Native 0.83, React 19, TypeScript |
-| **Routing** | expo-router with typed routes and role-based groups |
-| **Auth** | Clerk (`@clerk/expo`) — email, phone, Google Sign-In |
-| **Backend** | Supabase — Postgres, RLS, Realtime, Storage, Edge Functions |
-| **Data** | TanStack Query, Zustand, Zod |
-| **Styling** | Uniwind (Tailwind CSS v4) with light/dark theme support |
-| **Payments** | Razorpay |
-| **Notifications** | Expo Push → FCM, via Supabase Edge Functions |
-| **Observability** | Sentry |
-| **Delivery** | EAS Build (APK / AAB) + EAS Update (OTA) |
-| **Quality** | ESLint, Jest, React Native Testing Library, SQL RLS tests |
+| Layer             | Technology                                                  |
+| ----------------- | ----------------------------------------------------------- |
+| **Mobile**        | Expo SDK 55, React Native 0.83, React 19, TypeScript        |
+| **Routing**       | expo-router with typed routes and role-based groups         |
+| **Auth**          | Clerk (`@clerk/expo`) — email, phone, Google Sign-In        |
+| **Backend**       | Supabase — Postgres, RLS, Realtime, Storage, Edge Functions |
+| **Data**          | TanStack Query, Zustand, Zod                                |
+| **Styling**       | Uniwind (Tailwind CSS v4) with light/dark theme support     |
+| **Payments**      | Razorpay                                                    |
+| **Notifications** | Expo Push → FCM, via Supabase Edge Functions                |
+| **Observability** | Sentry                                                      |
+| **Delivery**      | EAS Build (APK / AAB) + EAS Update (OTA)                    |
+| **Quality**       | ESLint, Jest, React Native Testing Library, SQL RLS tests   |
 
 ---
 
@@ -257,8 +245,8 @@ EXPO_PUBLIC_CLERK_PUBLISHABLE_KEY=pk_test_...
 
 Every RLS policy reads the logged-in user from the Clerk JWT (`auth.jwt() ->> 'sub'`). **Skipping this step causes empty screens across the app.**
 
-1. **Clerk Dashboard** → *Configure* → *Integrations* → enable **Supabase**
-2. **Supabase Dashboard** → *Authentication* → *Sign In / Providers* → *Third-Party Auth* → **Add provider → Clerk** — paste your Clerk frontend API domain
+1. **Clerk Dashboard** → _Configure_ → _Integrations_ → enable **Supabase**
+2. **Supabase Dashboard** → _Authentication_ → _Sign In / Providers_ → _Third-Party Auth_ → **Add provider → Clerk** — paste your Clerk frontend API domain
 3. In **Clerk → User & authentication**, enable email (password + email code) and phone (SMS). Portl expects E.164 numbers (e.g. `+919876543210`)
 
 The Clerk token is attached to Supabase automatically in `src/lib/supabase.ts`.
@@ -287,7 +275,7 @@ The baseline seed is identity-free. Wire real Clerk logins to the demo society:
    ```
    On Windows PowerShell: `$env:DATABASE_URL`.
 
-This maps the three Clerk users to Resident **Ravi**, Guard **Ganesh**, and Admin **Anita** in *Sunrise Heights*.
+This maps the three Clerk users to Resident **Ravi**, Guard **Ganesh**, and Admin **Anita** in _Sunrise Heights_.
 
 ### Run Locally
 
@@ -297,11 +285,11 @@ bun start
 
 Scan the QR code with **Expo Go (SDK 55)** and sign in as each demo user to verify role-specific dashboards.
 
-| Works in Expo Go | Requires dev / APK build |
-| --- | --- |
-| Email & phone login, all role dashboards | Razorpay payments |
-| Visitor / gate flow, notices, polls, tickets | Google Sign-In |
-| Amenities, live Supabase data | Push notifications, Sentry |
+| Works in Expo Go                             | Requires dev / APK build   |
+| -------------------------------------------- | -------------------------- |
+| Email & phone login, all role dashboards     | Razorpay payments          |
+| Visitor / gate flow, notices, polls, tickets | Google Sign-In             |
+| Amenities, live Supabase data                | Push notifications, Sentry |
 
 **Windows tip:** If Metro fails with `EMFILE`, stop Node processes, clear `%LOCALAPPDATA%\Temp\metro-cache`, and restart with `bun start`. Use `bun expo start --tunnel` if LAN connection fails.
 
@@ -396,6 +384,6 @@ This project was built for hackathon demonstration. See repository license terms
 
 **Portl** — Built with Expo, React Native, Clerk, and Supabase.
 
-*The day a guard says the app is faster than calling the flat, Portl has won the gate.*
+_The day a guard says the app is faster than calling the flat, Portl has won the gate._
 
 </div>
