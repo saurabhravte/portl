@@ -47,7 +47,7 @@ module.exports = ({ config }) => {
       versionCode: Number.parseInt(process.env.ANDROID_VERSION_CODE || "1", 10),
     },
     // Native Google Sign-In module (paired with @clerk/expo already in app.json).
-    plugins: [...plugins, "@clerk/expo-google-signin"],
+    plugins: [...plugins],
     runtimeVersion: { policy: "appVersion" },
     updates: projectId
       ? {
@@ -70,7 +70,8 @@ module.exports = ({ config }) => {
         process.env.EXPO_PUBLIC_CLERK_GOOGLE_ANDROID_CLIENT_ID?.trim() ||
         undefined,
       EXPO_PUBLIC_CLERK_GOOGLE_IOS_URL_SCHEME:
-        process.env.EXPO_PUBLIC_CLERK_GOOGLE_IOS_URL_SCHEME?.trim() || undefined,
+        process.env.EXPO_PUBLIC_CLERK_GOOGLE_IOS_URL_SCHEME?.trim() ||
+        undefined,
     },
     description: release
       ? config.description

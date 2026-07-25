@@ -6,7 +6,6 @@
       "name": "portl",
       "dependencies": {
         "@clerk/expo": "^3.7.4",
-        "@clerk/expo-google-signin": "^1.0.0",
         "@expo-google-fonts/manrope": "^0.4.2",
         "@react-native-async-storage/async-storage": "~2.2.0",
         "@react-native-community/datetimepicker": "8.6.0",
@@ -350,8 +349,6 @@
     "@clerk/clerk-js": ["@clerk/clerk-js@6.25.5", "", { "dependencies": { "@base-org/account": "2.0.1", "@clerk/shared": "^4.25.5", "@coinbase/wallet-sdk": "4.3.7", "@solana/wallet-adapter-base": "0.9.27", "@solana/wallet-adapter-react": "0.15.39", "@solana/wallet-standard": "1.1.4", "@stripe/stripe-js": "5.6.0", "@swc/helpers": "0.5.21", "@tanstack/query-core": "^5.100.6", "@wallet-standard/core": "1.1.1", "@zxcvbn-ts/core": "3.0.4", "@zxcvbn-ts/language-common": "3.0.4", "alien-signals": "2.0.6", "browser-tabs-lock": "1.3.0", "core-js": "3.47.0", "crypto-js": "^4.2.0", "dequal": "2.0.3" } }, "sha512-RcMZLAj3nKJd4cVGdPFGmUjaLN4JlY1eLrQOmnP9z8Z7vX8Y3YXhIpD/M2KHvh4N5UNpArkjYOOzsIfUqfn/HA=="],
 
     "@clerk/expo": ["@clerk/expo@3.7.8", "", { "dependencies": { "@clerk/clerk-js": "^6.25.5", "@clerk/react": "^6.12.5", "@clerk/shared": "^4.25.5", "base-64": "^1.0.0", "react-native-url-polyfill": "2.0.0", "tslib": "2.8.1" }, "peerDependencies": { "@clerk/expo-passkeys": ">=0.0.6", "expo": ">=53 <58", "expo-apple-authentication": ">=7.0.0", "expo-auth-session": ">=5", "expo-constants": ">=12", "expo-crypto": ">=12", "expo-local-authentication": ">=13.5.0", "expo-secure-store": ">=12.4.0", "expo-web-browser": ">=12.5.0", "react": "^18.0.0 || ^19.0.0", "react-dom": "^18.0.0 || ^19.0.0", "react-native": ">=0.75" }, "optionalPeers": ["@clerk/expo-passkeys", "expo-apple-authentication", "expo-auth-session", "expo-constants", "expo-crypto", "expo-local-authentication", "expo-secure-store", "expo-web-browser", "react-dom"] }, "sha512-kfMlD/myFLcmbKUOHcekx7EFSuoUFbLmLgqQKMZFE6dwRXu2etsKoAV622c4j0Nbgubf+qwJId8eoS4vikRNGw=="],
-
-    "@clerk/expo-google-signin": ["@clerk/expo-google-signin@1.0.0", "", { "peerDependencies": { "expo": ">=54 <58" } }, "sha512-yAlLLs1RqX1IQlF/rxcVEYYin1Uo/0W5BGtvcTactC/tpP4BPsw0RW+acB6D6AbdOFrKP5+suMNpNVvmjY1cYA=="],
 
     "@clerk/react": ["@clerk/react@6.12.5", "", { "dependencies": { "@clerk/shared": "^4.25.5", "tslib": "2.8.1" }, "peerDependencies": { "react": "^18.0.0 || ~19.0.3 || ~19.1.4 || ~19.2.3 || ~19.3.0-0", "react-dom": "^18.0.0 || ~19.0.3 || ~19.1.4 || ~19.2.3 || ~19.3.0-0" } }, "sha512-sPO67Ikeh+r9Mu0jEinEHlkmzYf0VSCGHNIf4ueCHT1H6+wDzrXZS08uFB3Tv4jd6IZJdXSEXDr51NAn+86Jiw=="],
 
