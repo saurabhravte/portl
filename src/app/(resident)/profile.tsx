@@ -18,6 +18,7 @@ import {
 import { useMyBadges } from "@/features/community/extras";
 import { HouseholdPanel } from "@/features/household/HouseholdPanel";
 import { PrivacyControls } from "@/features/privacy/PrivacyControls";
+import { ContactDetailsSection } from "@/features/auth/ContactDetailsSection";
 import { ResidentIdCard } from "@/features/residentId/ResidentIdCard";
 import { checkAndApplyUpdate } from "@/lib/ota";
 import { signOutFromPortl } from "@/lib/signOut";
@@ -79,6 +80,10 @@ export default function Profile() {
           {profile?.role === "resident" && profile?.flat_id ? (
             <ResidentIdCard />
           ) : null}
+
+          {/* Phase 2.2-2.4: contact capture + verification moved here from
+              sign-up, so account creation never waits on an inbox. */}
+          <ContactDetailsSection />
 
           <AppearanceSettings />
 

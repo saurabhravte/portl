@@ -7,6 +7,10 @@ import {
 import { OtaBanner } from "@/components/OtaBanner";
 import { Button, Screen } from "@/components/ui";
 import { getVerifiedPrimaryIdentity } from "@/features/auth/identity";
+import {
+  parseClaimResult,
+  reasonFromLegacyError,
+} from "@/features/auth/inviteClaim";
 import { useSessionRestorationRouting } from "@/features/auth/sessionRouting";
 import {
   getContactPhoneFromMetadata,
@@ -59,10 +63,6 @@ import { z } from "zod";
 const inviteClaimInputSchema = onboardingIdentitySchema.safeExtend({
   name: z.string().trim().min(1).max(120).optional(),
 });
-const inviteClaimResultSchema = z.union([
-  z.literal(true),
-  z.strictObject({ claimed: z.boolean() }).passthrough(),
-]);
 
 applyGlobalFont(); // Manrope everywhere — the starter's global font patch
 
@@ -157,7 +157,11 @@ function RoleGate({ children }: { children: React.ReactNode }) {
         .maybeSingle();
       if (cancelled) return;
       if (error) {
-        setProfileFailed(error.message || "Could not load your Portl profile.");
+        // Raw PostgREST/Postgres strings are not user-facing copy. The real
+        // message still goes to Sentry via the query client.
+        setProfileFailed(
+          "We couldn't reach Portl just now. Check your connection and try again.",
+        );
         return;
       }
       let prof = (data as Profile) ?? null;
@@ -172,50 +176,64 @@ function RoleGate({ children }: { children: React.ReactNode }) {
       // them verify, rather than a dead end demanding an admin invite.
       if (!prof) {
         const identity = getVerifiedPrimaryIdentity(user);
+
+        // No verified identifier yet. This is the ordinary state right after a
+        // username-only sign-up, so it must NOT read as a failure — the user
+        // goes to the in-app lobby where verification lives (Phase 2).
         if (!identity) {
           setProfilePendingVerification();
           return;
         }
-        if (identity) {
-          const claimInput = parseInput(inviteClaimInputSchema, {
-            identityType: identity.type,
-            identityValue: identity.value,
-            name: user.fullName ?? undefined,
-          });
-          const { data: claim, error: claimError } = await supabase.rpc(
-            "claim_invite",
-            {
-              p_identity_type: claimInput.identityType,
-              p_identity_value: claimInput.identityValue,
-              p_name: claimInput.name,
-            },
+
+        const claimInput = parseInput(inviteClaimInputSchema, {
+          identityType: identity.type,
+          identityValue: identity.value,
+          name: user.fullName ?? undefined,
+        });
+        const { data: claim, error: claimError } = await supabase.rpc(
+          "claim_invite",
+          {
+            p_identity_type: claimInput.identityType,
+            p_identity_value: claimInput.identityValue,
+            p_name: claimInput.name,
+          },
+        );
+        if (cancelled) return;
+
+        // A claim that finds nothing is a normal outcome, not a fault. Only a
+        // genuinely unexpected RPC failure (network, ambiguous invite, RLS)
+        // may reach `setProfileFailed`, which is the terminal error screen.
+        let result = claimError
+          ? reasonFromLegacyError(claimError)
+          : parseClaimResult(claim);
+
+        if (!result) {
+          setProfileFailed(
+            "We couldn't check your society invitation. Please try again.",
           );
+          return;
+        }
+
+        if (result.reason === "identity_unverified") {
+          setProfilePendingVerification();
+          return;
+        }
+
+        // `claimed` or `already_linked` both mean a row should now exist.
+        if (result.claimed || result.reason === "already_linked") {
+          const { data: fresh, error: freshError } = await supabase
+            .from("profiles")
+            .select("*")
+            .eq("id", user.id)
+            .maybeSingle();
           if (cancelled) return;
-          if (claimError) {
+          if (freshError) {
             setProfileFailed(
-              claimError.message || "Could not check your society invitation.",
+              "We couldn't load your profile. Please try again.",
             );
             return;
           }
-          const parsedClaim = parseInput(inviteClaimResultSchema, claim);
-          if (
-            parsedClaim === true ||
-            parsedClaim.claimed
-          ) {
-            const { data: fresh, error: freshError } = await supabase
-              .from("profiles")
-              .select("*")
-              .eq("id", user.id)
-              .maybeSingle();
-            if (cancelled) return;
-            if (freshError) {
-              setProfileFailed(
-                freshError.message || "Could not load your linked profile.",
-              );
-              return;
-            }
-            prof = (fresh as Profile) ?? null;
-          }
+          prof = (fresh as Profile) ?? null;
         }
       }
 
@@ -332,7 +350,26 @@ function RoleGate({ children }: { children: React.ReactNode }) {
     }
   };
 
-  if (isSignedIn && profileStatus !== "linked") {
+  /**
+   * Phase 1.5 — only two states may block the router.
+   *
+   * This used to be `profileStatus !== "linked"`, which swallowed
+   * `pendingVerification` and `unlinked` too. Both of those are states
+   * `resolveSessionRoute()` explicitly routes to `/(auth)/pending-access`,
+   * but that screen could never mount: the gate returned before `children`
+   * (the <Stack>) rendered, so the navigation landed in an unmounted tree and
+   * the user was left staring at this screen with no way forward.
+   *
+   * `pendingVerification` did not even have a branch here, so it rendered a
+   * bare "Portl" wordmark on an empty screen.
+   *
+   * Recoverable states now fall through to the router and get a real,
+   * actionable screen. Only "still working" and "genuinely broken" block.
+   */
+  const blocksRouter =
+    isSignedIn && (profileStatus === "loading" || profileStatus === "failed");
+
+  if (blocksRouter) {
     return (
       <Screen className="items-center justify-center gap-4 p-8">
         <Text className="text-display text-ink">Portl</Text>
@@ -340,31 +377,16 @@ function RoleGate({ children }: { children: React.ReactNode }) {
           <>
             <ActivityIndicator color={colors.primary} />
             <Text className="text-center text-body text-ink-soft">
-              Linking your society profile…
+              Getting things ready…
             </Text>
           </>
-        ) : null}
-        {profileStatus === "unlinked" ? (
+        ) : (
           <>
-            <Text className="text-center text-title text-ink">
-              No society invitation found
-            </Text>
-            <Text className="text-center text-body text-ink-soft">
-              Ask your society admin to invite your verified phone number or
-              email, then try again.
-            </Text>
-            <Button title="Try again" onPress={retryProfile} />
-            <Button
-              title="Sign out"
-              variant="ghost"
-              onPress={() => void signOutSafely()}
-            />
-          </>
-        ) : null}
-        {profileStatus === "failed" ? (
-          <>
-            <Text accessibilityRole="alert" className="text-center text-title text-ink">
-              Couldn’t load your profile
+            <Text
+              accessibilityRole="alert"
+              className="text-center text-title text-ink"
+            >
+              Something went wrong
             </Text>
             <Text className="text-center text-body text-ink-soft">
               {profileError ?? "Check your connection and try again."}
@@ -376,7 +398,7 @@ function RoleGate({ children }: { children: React.ReactNode }) {
               onPress={() => void signOutSafely()}
             />
           </>
-        ) : null}
+        )}
       </Screen>
     );
   }

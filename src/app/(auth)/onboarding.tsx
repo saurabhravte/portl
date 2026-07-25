@@ -1,367 +1,206 @@
-import { BrandMark } from "@/components/BrandMark";
-import { AppIcon, Avatar, Button, Screen } from "@/components/ui";
-import type { AppIconName } from "@/components/ui";
+import { ONBOARDING_ART, type OnboardingArtKey } from "@/features/auth/OnboardingArt";
 import { useOnboardingStore } from "@/lib/onboarding";
 import { useResponsive } from "@/theme/useResponsive";
 import { useThemeColors } from "@/theme/useThemeColors";
-import { Image } from "expo-image";
 import * as Notifications from "expo-notifications";
 import { useRouter } from "expo-router";
-import React, { useMemo, useRef, useState } from "react";
+import React, { useCallback, useRef, useState } from "react";
 import {
   FlatList,
-  NativeScrollEvent,
-  NativeSyntheticEvent,
   Pressable,
   Text,
   View,
-  ViewToken,
+  useWindowDimensions,
+  type NativeScrollEvent,
+  type NativeSyntheticEvent,
 } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 
-const gateHero = require("../../../assets/images/onboarding-gate.png");
+/**
+ * Onboarding — Phases 4.1 to 4.4.
+ *
+ * Rebuilt from scratch against the supplied reference. The previous version
+ * was a 367-line screen with per-slide bespoke components, an 842 KB raster
+ * hero and a floating brand lockup pinned over it; all of that is gone.
+ *
+ * Structure, matching the reference exactly:
+ *   art (upper half) -> title -> body -> full-width CTA -> page dots
+ *
+ * PALETTE (4.4): monochrome, via the onboard-* tokens only. This screen
+ * deliberately does NOT use the claret CTA. It runs before sign-in, before
+ * the user has any idea what Portl is, and a black button reads as "continue"
+ * rather than as a brand statement. Colour starts at the login screen.
+ *
+ * The dark-mode counterpart inverts to white-on-black rather than switching
+ * to the warm surfaces, so onboarding stays monochrome in both schemes.
+ */
 
-type Slide = {
-  key: "welcome" | "benefit" | "notify";
-  eyebrow: string;
-  title: React.ReactNode;
+interface Slide {
+  key: OnboardingArtKey;
+  title: string;
   body: string;
-};
+  cta: string;
+}
 
-// Three screens: (1) welcome + intro, (2) the core benefit with an
-// illustration, (3) the notifications ask + the prominent Get Started button.
 const SLIDES: Slide[] = [
   {
     key: "welcome",
-    eyebrow: "WELCOME",
-    title: (
-      <Text className="text-display text-ink">
-        Welcome to <Text className="text-primary-text">Portl</Text>
-      </Text>
-    ),
+    title: "Welcome to Portl",
     body: "Your society's gate, visitors, notices and payments — all in one calm, simple place.",
+    cta: "Next",
   },
   {
-    key: "benefit",
-    eyebrow: "WHY PORTL",
-    title: (
-      <Text className="text-display text-ink">Approve visitors in one tap</Text>
-    ),
-    body: "When a guard logs someone at the gate, you get an instant request. Approve or deny without getting up.",
+    key: "approve",
+    title: "Approve visitors in one tap",
+    body: "When a guard logs someone at the gate, the request reaches you instantly. Approve or deny without getting up.",
+    cta: "Next",
   },
   {
     key: "notify",
-    eyebrow: "ONE LAST THING",
-    title: <Text className="text-display text-ink">Stay in the loop</Text>,
-    body: "Turn on notifications so you never miss a visitor at the gate, a delivery, or a community alert.",
+    title: "Stay in the loop",
+    body: "Turn on notifications so you never miss a visitor, a delivery, or a community alert.",
+    cta: "Get Started",
   },
 ];
-
-/* ── Per-slide illustrations (vector/icon based, no extra assets) ─────── */
-
-function WelcomeVisual({ height }: { height: number }) {
-  return (
-    <View className="overflow-hidden rounded-xl border border-border bg-surface">
-      <Image
-        source={gateHero}
-        style={{ width: "100%", height }}
-        contentFit="cover"
-        accessibilityLabel="A Portl-managed community entrance"
-      />
-      {/* Brand lockup sits over the hero so the logo leads the first screen. */}
-      <View className="absolute bottom-3 left-3 flex-row items-center gap-2 rounded-pill bg-surface/90 px-3 py-1.5">
-        <BrandMark size="sm" />
-        <Text className="text-label text-ink">Portl</Text>
-      </View>
-    </View>
-  );
-}
-
-function ApprovalPill({
-  label,
-  icon,
-  tone,
-  colors,
-}: {
-  label: string;
-  icon: AppIconName;
-  tone: "approve" | "deny";
-  colors: ReturnType<typeof useThemeColors>;
-}) {
-  const bg = tone === "approve" ? "bg-approve-bg" : "bg-deny-bg";
-  const fg = tone === "approve" ? "text-approve-text" : "text-deny-text";
-  const iconColor = tone === "approve" ? colors.approve : colors.deny;
-  return (
-    <View
-      className={`flex-1 flex-row items-center justify-center gap-1.5 rounded-pill px-3 py-2 ${bg}`}
-    >
-      <AppIcon name={icon} size={16} color={iconColor} />
-      <Text className={`text-caption font-semibold ${fg}`}>{label}</Text>
-    </View>
-  );
-}
-
-function BenefitVisual({
-  colors,
-  height,
-}: {
-  colors: ReturnType<typeof useThemeColors>;
-  height: number;
-}) {
-  return (
-    <View
-      style={{ height }}
-      className="justify-center rounded-xl bg-primary-soft border border-border p-5"
-    >
-      {/* A mock "visitor at the gate" approval request card. */}
-      <View className="gap-3 rounded-lg border border-border bg-surface p-4">
-        <View className="flex-row items-center gap-3">
-          <Avatar name="Guest Visitor" size={40} />
-          <View className="flex-1">
-            <Text className="text-label text-ink">Delivery — Guest</Text>
-            <Text className="text-caption text-ink-soft">
-              At Gate 1 · for Flat A-101
-            </Text>
-          </View>
-          <View className="h-8 w-8 items-center justify-center rounded-full bg-accent-soft">
-            <AppIcon name="shield" size={16} color={colors.accent} />
-          </View>
-        </View>
-        <View className="flex-row gap-2">
-          <ApprovalPill label="Deny" icon="close" tone="deny" colors={colors} />
-          <ApprovalPill
-            label="Approve"
-            icon="check"
-            tone="approve"
-            colors={colors}
-          />
-        </View>
-      </View>
-    </View>
-  );
-}
-
-function NotifyVisual({
-  colors,
-  height,
-}: {
-  colors: ReturnType<typeof useThemeColors>;
-  height: number;
-}) {
-  const bell = Math.round(height * 0.52);
-  return (
-    <View
-      style={{ height }}
-      className="items-center justify-center rounded-xl bg-primary-soft border border-border"
-    >
-      <View
-        style={{ height: bell, width: bell, borderRadius: bell / 2 }}
-        className="items-center justify-center bg-surface border border-border"
-      >
-        <AppIcon name="bell-active" size={Math.round(bell * 0.5)} color={colors.primary} />
-      </View>
-      {/* status dots — reinforce "alerts" without relying on color alone */}
-      <View className="mt-4 flex-row items-center gap-2">
-        <View className="flex-row items-center gap-1 rounded-pill bg-approve-bg px-2.5 py-1">
-          <AppIcon name="check-circle" size={12} color={colors.approve} />
-          <Text className="text-caption text-approve-text">Visitor approved</Text>
-        </View>
-        <View className="flex-row items-center gap-1 rounded-pill bg-warn-bg px-2.5 py-1">
-          <AppIcon name="delivery" size={12} color={colors.warn} />
-          <Text className="text-caption text-warn-text">Parcel at gate</Text>
-        </View>
-      </View>
-    </View>
-  );
-}
-
-function SlideVisual({
-  slideKey,
-  colors,
-  height,
-}: {
-  slideKey: Slide["key"];
-  colors: ReturnType<typeof useThemeColors>;
-  height: number;
-}) {
-  if (slideKey === "welcome") return <WelcomeVisual height={height} />;
-  if (slideKey === "benefit")
-    return <BenefitVisual colors={colors} height={height} />;
-  return <NotifyVisual colors={colors} height={height} />;
-}
 
 export default function Onboarding() {
   const router = useRouter();
   const colors = useThemeColors();
-  // Live window width: a module-scope Dimensions.get() snapshot leaves the
-  // paged FlatList mis-aligned after a rotation or split-screen resize.
-  const { width, height, isWide, contentMaxWidth } = useResponsive();
-  // A fixed 240pt art block crowds an iPhone SE and looks lost on a tablet.
-  const visualHeight = Math.round(
-    Math.min(Math.max(height * 0.28, 180), isWide ? 340 : 260),
-  );
-  const slideWidth = isWide ? Math.min(width, contentMaxWidth) : width;
-  const listRef = useRef<FlatList<Slide>>(null);
+  const { width } = useWindowDimensions();
+  const { scale } = useResponsive();
+  const complete = useOnboardingStore((s) => s.complete);
+
   const [index, setIndex] = useState(0);
+  const listRef = useRef<FlatList<Slide>>(null);
   const [busy, setBusy] = useState(false);
 
-  const completeOnboarding = useOnboardingStore((s) => s.complete);
+  const isLast = index === SLIDES.length - 1;
+  const artSize = scale(200, 148, 260);
 
-  // `askPermission` is only true when the user taps Get Started on the final
-  // screen; skipping never triggers the OS prompt.
-  const finish = async (askPermission: boolean) => {
+  /**
+   * Only the final slide asks for notifications, and only on the way out.
+   * Asking on mount trains people to deny before they know what the app
+   * does. A refusal is not an error here — it must never block entry.
+   */
+  const finish = useCallback(async () => {
     setBusy(true);
     try {
-      if (askPermission) {
-        try {
-          await Notifications.requestPermissionsAsync();
-        } catch {
-          // Permission is optional — never block onboarding on it.
-        }
+      const { status } = await Notifications.getPermissionsAsync();
+      if (status === "undetermined") {
+        await Notifications.requestPermissionsAsync();
       }
-      await completeOnboarding();
-      router.replace("/(auth)/sign-in" as any);
+    } catch {
+      // Permission prompts can fail on emulators without Play Services.
     } finally {
+      await complete();
       setBusy(false);
+      router.replace("/(auth)/sign-in");
     }
-  };
+  }, [complete, router]);
 
-  const goNext = () => {
-    if (index < SLIDES.length - 1) {
-      listRef.current?.scrollToIndex({ index: index + 1, animated: true });
+  const onCta = () => {
+    if (isLast) {
+      void finish();
+      return;
     }
+    const next = index + 1;
+    listRef.current?.scrollToOffset({ offset: next * width, animated: true });
+    setIndex(next);
   };
 
-  const onViewableItemsChanged = useRef(
-    ({ viewableItems }: { viewableItems: ViewToken[] }) => {
-      const first = viewableItems[0];
-      if (typeof first?.index === "number") setIndex(first.index);
-    },
-  ).current;
+  const onSkip = () => void finish();
 
-  const viewConfig = useMemo(
-    () => ({ viewAreaCoveragePercentThreshold: 60 }),
-    [],
-  );
-
-  const onMomentumEnd = (e: NativeSyntheticEvent<NativeScrollEvent>) => {
-    setIndex(Math.round(e.nativeEvent.contentOffset.x / slideWidth));
+  // Derive the page from the scroll offset rather than onViewableItemsChanged:
+  // the viewability callback fires mid-swipe and made the dots flicker.
+  const onMomentumEnd = (event: NativeSyntheticEvent<NativeScrollEvent>) => {
+    const page = Math.round(event.nativeEvent.contentOffset.x / width);
+    if (page !== index) setIndex(page);
   };
-
-  const isLast = index === SLIDES.length - 1;
 
   return (
-    <Screen edges={["top", "bottom"]} className="justify-between">
-      <View className="flex-row items-center justify-between px-6 pt-4">
-        <View className="flex-row items-center gap-2">
-          <BrandMark size="sm" />
-          <Text className="text-title text-ink">Portl</Text>
+    <View className="flex-1 bg-onboard-bg">
+      <SafeAreaView className="flex-1" edges={["top", "bottom"]}>
+        {/* Skip stays available on every slide — onboarding is never a gate. */}
+        <View className="h-11 flex-row items-center justify-end px-6">
+          {!isLast ? (
+            <Pressable
+              accessibilityRole="button"
+              accessibilityLabel="Skip onboarding"
+              onPress={onSkip}
+              hitSlop={12}
+              className="min-h-11 justify-center px-2 active:opacity-60"
+            >
+              <Text className="text-label text-onboard-ink-muted">Skip</Text>
+            </Pressable>
+          ) : null}
         </View>
-        {!isLast ? (
+
+        <FlatList
+          ref={listRef}
+          data={SLIDES}
+          keyExtractor={(slide) => slide.key}
+          horizontal
+          pagingEnabled
+          showsHorizontalScrollIndicator={false}
+          onMomentumScrollEnd={onMomentumEnd}
+          renderItem={({ item }) => {
+            const Art = ONBOARDING_ART[item.key];
+            return (
+              <View style={{ width }} className="flex-1 items-center px-8">
+                <View className="flex-1 items-center justify-center">
+                  <Art
+                    size={artSize}
+                    ink={colors.onboardInk}
+                    muted={colors.onboardInkMuted}
+                    background={colors.onboardBg}
+                  />
+                </View>
+                <View className="gap-3 pb-6">
+                  <Text className="text-center text-display text-onboard-ink">
+                    {item.title}
+                  </Text>
+                  <Text className="text-center text-body text-onboard-ink-muted">
+                    {item.body}
+                  </Text>
+                </View>
+              </View>
+            );
+          }}
+        />
+
+        <View className="gap-6 px-8 pb-4 pt-2">
           <Pressable
             accessibilityRole="button"
-            accessibilityLabel="Skip onboarding"
-            onPress={() => void finish(false)}
+            accessibilityLabel={SLIDES[index].cta}
+            accessibilityState={{ disabled: busy, busy }}
+            onPress={onCta}
             disabled={busy}
-            hitSlop={8}
+            className={`min-h-14 items-center justify-center rounded-md bg-onboard-cta px-4 ${
+              busy ? "opacity-50" : "active:opacity-80"
+            }`}
           >
-            <Text className="text-label text-ink-muted">Skip</Text>
+            <Text className="text-label text-on-onboard-cta">
+              {SLIDES[index].cta}
+            </Text>
           </Pressable>
-        ) : (
-          <View style={{ width: 40 }} />
-        )}
-      </View>
 
-      <FlatList
-        ref={listRef}
-        data={SLIDES}
-        keyExtractor={(item) => item.key}
-        horizontal
-        pagingEnabled
-        showsHorizontalScrollIndicator={false}
-        onMomentumScrollEnd={onMomentumEnd}
-        onViewableItemsChanged={onViewableItemsChanged}
-        viewabilityConfig={viewConfig}
-        renderItem={({ item }) => (
+          {/* Dots are decoration, not a control — the list is the control. */}
           <View
-            style={{ width: slideWidth }}
-            className="justify-center gap-5 px-8"
+            className="flex-row items-center justify-center gap-2"
+            accessibilityElementsHidden
+            importantForAccessibility="no-hide-descendants"
           >
-            <SlideVisual
-              slideKey={item.key}
-              colors={colors}
-              height={visualHeight}
-            />
-            <View className="gap-2">
-              <Text className="text-caption uppercase tracking-widest text-primary-text">
-                {item.eyebrow}
-              </Text>
-              {item.title}
-              <Text className="text-body text-ink-soft">{item.body}</Text>
-            </View>
+            {SLIDES.map((slide, i) => (
+              <View
+                key={slide.key}
+                className={`h-2 rounded-pill ${
+                  i === index ? "w-6 bg-onboard-cta" : "w-2 bg-onboard-dot"
+                }`}
+              />
+            ))}
           </View>
-        )}
-      />
-
-      <View className="gap-4 px-6 pb-2">
-        <View
-          accessibilityRole="progressbar"
-          accessibilityLabel={`Step ${index + 1} of ${SLIDES.length}`}
-          accessibilityValue={{ min: 1, max: SLIDES.length, now: index + 1 }}
-          className="flex-row items-center justify-center gap-2"
-        >
-          {SLIDES.map((s, i) => (
-            <View
-              key={s.key}
-              accessibilityElementsHidden
-              importantForAccessibility="no-hide-descendants"
-              style={{
-                width: i === index ? 20 : 8,
-                height: 8,
-                borderRadius: 999,
-                backgroundColor: i === index ? colors.primary : colors.border,
-              }}
-            />
-          ))}
         </View>
-
-        {isLast ? (
-          <View className="gap-2">
-            <Button
-              title="Get Started"
-              onPress={() => void finish(true)}
-              loading={busy}
-            />
-            <Pressable
-              accessibilityRole="button"
-              onPress={() => void finish(false)}
-              disabled={busy}
-              className="items-center py-2"
-            >
-              <Text className="text-label text-ink-muted">Maybe later</Text>
-            </Pressable>
-          </View>
-        ) : (
-          <View className="flex-row items-center justify-between">
-            <Pressable
-              accessibilityRole="button"
-              onPress={() => void finish(false)}
-              disabled={busy}
-              className="min-h-11 justify-center px-2"
-            >
-              <Text className="text-label text-ink-muted">Skip</Text>
-            </Pressable>
-            <Pressable
-              accessibilityRole="button"
-              accessibilityLabel="Next"
-              onPress={goNext}
-              disabled={busy}
-              className="h-14 w-14 items-center justify-center rounded-full bg-primary active:opacity-80"
-            >
-              <AppIcon name="next" size={24} color={colors.onPrimary} />
-            </Pressable>
-          </View>
-        )}
-      </View>
-    </Screen>
+      </SafeAreaView>
+    </View>
   );
 }

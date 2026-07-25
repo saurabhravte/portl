@@ -151,6 +151,9 @@ const ICONS = {
   alert: "alert-circle",
   inbox: "file-tray-outline",
   refresh: "refresh",
+  mail: "mail-outline",
+  phone: "call-outline",
+  edit: "create-outline",
 } as const;
 
 export type AppIconName = keyof typeof ICONS;
@@ -186,11 +189,18 @@ type ButtonVariant =
   | "deny-outline"
   | "ghost";
 
+/*
+ * Phase 7.1 — `approve` used to be `bg-primary` with `text-on-primary`, i.e.
+ * the brand CTA colour, not the approve colour. An "Approve" and a "Pay now"
+ * button were visually identical, and the approve token was going unused
+ * while approve-green appeared only as a badge. Each variant now uses its own
+ * role pair.
+ */
 const btnBg: Record<ButtonVariant, string> = {
   primary: "bg-primary",
   secondary: "bg-surface-alt",
   ghost: "bg-transparent border border-border",
-  approve: "bg-primary",
+  approve: "bg-approve",
   deny: "bg-deny",
   "deny-outline": "bg-transparent border border-deny",
 };
@@ -199,8 +209,8 @@ const btnFg: Record<ButtonVariant, string> = {
   primary: "text-on-primary",
   secondary: "text-ink",
   ghost: "text-ink",
-  approve: "text-on-primary",
-  deny: "text-on-primary",
+  approve: "text-on-approve",
+  deny: "text-on-deny",
   "deny-outline": "text-deny-text",
 };
 
@@ -462,10 +472,19 @@ export function Field(
     error?: string;
     /** Show an eye toggle when `secureTextEntry` is used. */
     secureToggle?: boolean;
+    /** Icon inside the field, left of the text (Phase 6 reference design). */
+    leadingIcon?: AppIconName;
   },
 ) {
-  const { label, className, error, secureToggle, secureTextEntry, ...rest } =
-    props;
+  const {
+    label,
+    className,
+    error,
+    secureToggle,
+    secureTextEntry,
+    leadingIcon,
+    ...rest
+  } = props;
   const colors = useThemeColors();
   const [revealed, setRevealed] = React.useState(false);
   const isSecure = !!secureTextEntry && !(secureToggle && revealed);
@@ -474,13 +493,25 @@ export function Field(
     <View className="gap-1">
       {label ? <Text className="text-label text-ink">{label}</Text> : null}
       <View className="relative justify-center">
+        {leadingIcon ? (
+          <View
+            className="absolute left-4 z-10"
+            pointerEvents="none"
+            accessibilityElementsHidden
+            importantForAccessibility="no-hide-descendants"
+          >
+            <AppIcon name={leadingIcon} size={18} color={colors.inkMuted} />
+          </View>
+        ) : null}
         <TextInput
           placeholderTextColorClassName="text-ink-faint"
           accessibilityState={{ disabled: rest.editable === false }}
           secureTextEntry={isSecure}
-          className={`min-h-11 rounded-md border bg-surface-alt px-4 text-base text-ink ${
-            secureToggle && secureTextEntry ? "pr-12" : ""
-          } ${error ? "border-deny" : "border-border"} ${className ?? ""}`}
+          className={`min-h-12 rounded-md border bg-surface-alt px-4 text-base text-ink ${
+            leadingIcon ? "pl-11" : ""
+          } ${secureToggle && secureTextEntry ? "pr-12" : ""} ${
+            error ? "border-deny" : "border-border"
+          } ${className ?? ""}`}
           {...rest}
         />
         {secureToggle && secureTextEntry ? (
