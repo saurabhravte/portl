@@ -116,7 +116,7 @@ export default function Payments() {
 
   return (
     <Screen>
-      <ScrollView
+      <ScrollView keyboardShouldPersistTaps="handled"
         className="flex-1"
         refreshControl={
           <RefreshControl
@@ -130,7 +130,7 @@ export default function Payments() {
 
           {defaulter.data ? (
             <Card className="border-deny">
-              <Text className="text-label text-deny">Overdue flag</Text>
+              <Text className="text-label text-deny-text">Overdue flag</Text>
               <Text className="text-body text-ink-soft">
                 Your {defaulter.data.period} maintenance due is flagged (
                 {defaulter.data.reason.replace(/_/g, " ")}). Pay to clear it.
@@ -305,7 +305,7 @@ export default function Payments() {
                               : dueAmountLabel(d)}
                         </Text>
                         {d.status === "paid" ? (
-                          <Text className="mt-1 text-caption text-primary">
+                          <Text className="mt-1 text-caption text-primary-text">
                             View invoice
                           </Text>
                         ) : null}

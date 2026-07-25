@@ -116,7 +116,7 @@ export function PollsPanel() {
             </Text>
             {poll.quorum_percent > 0 ? (
               <Text
-                className={`text-caption ${quorum.met ? "text-approve" : "text-ink-muted"}`}
+                className={`text-caption ${quorum.met ? "text-approve-text" : "text-ink-muted"}`}
               >
                 Quorum {quorum.met ? "met" : "not met"} · {total}/
                 {quorum.required} flats ({poll.quorum_percent}%)

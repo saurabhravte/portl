@@ -2,13 +2,13 @@ import { BrandMark } from "@/components/BrandMark";
 import { AppIcon, Avatar, Button, Screen } from "@/components/ui";
 import type { AppIconName } from "@/components/ui";
 import { useOnboardingStore } from "@/lib/onboarding";
+import { useResponsive } from "@/theme/useResponsive";
 import { useThemeColors } from "@/theme/useThemeColors";
 import { Image } from "expo-image";
 import * as Notifications from "expo-notifications";
 import { useRouter } from "expo-router";
 import React, { useMemo, useRef, useState } from "react";
 import {
-  Dimensions,
   FlatList,
   NativeScrollEvent,
   NativeSyntheticEvent,
@@ -18,7 +18,6 @@ import {
   ViewToken,
 } from "react-native";
 
-const { width } = Dimensions.get("window");
 const gateHero = require("../../../assets/images/onboarding-gate.png");
 
 type Slide = {
@@ -36,7 +35,7 @@ const SLIDES: Slide[] = [
     eyebrow: "WELCOME",
     title: (
       <Text className="text-display text-ink">
-        Welcome to <Text className="text-primary">Portl</Text>
+        Welcome to <Text className="text-primary-text">Portl</Text>
       </Text>
     ),
     body: "Your society's gate, visitors, notices and payments — all in one calm, simple place.",
@@ -59,15 +58,20 @@ const SLIDES: Slide[] = [
 
 /* ── Per-slide illustrations (vector/icon based, no extra assets) ─────── */
 
-function WelcomeVisual() {
+function WelcomeVisual({ height }: { height: number }) {
   return (
     <View className="overflow-hidden rounded-xl border border-border bg-surface">
       <Image
         source={gateHero}
-        style={{ width: "100%", height: 240 }}
+        style={{ width: "100%", height }}
         contentFit="cover"
         accessibilityLabel="A Portl-managed community entrance"
       />
+      {/* Brand lockup sits over the hero so the logo leads the first screen. */}
+      <View className="absolute bottom-3 left-3 flex-row items-center gap-2 rounded-pill bg-surface/90 px-3 py-1.5">
+        <BrandMark size="sm" />
+        <Text className="text-label text-ink">Portl</Text>
+      </View>
     </View>
   );
 }
@@ -84,7 +88,7 @@ function ApprovalPill({
   colors: ReturnType<typeof useThemeColors>;
 }) {
   const bg = tone === "approve" ? "bg-approve-bg" : "bg-deny-bg";
-  const fg = tone === "approve" ? "text-approve" : "text-deny";
+  const fg = tone === "approve" ? "text-approve-text" : "text-deny-text";
   const iconColor = tone === "approve" ? colors.approve : colors.deny;
   return (
     <View
@@ -98,11 +102,16 @@ function ApprovalPill({
 
 function BenefitVisual({
   colors,
+  height,
 }: {
   colors: ReturnType<typeof useThemeColors>;
+  height: number;
 }) {
   return (
-    <View className="h-60 justify-center rounded-xl bg-primary-soft border border-border p-5">
+    <View
+      style={{ height }}
+      className="justify-center rounded-xl bg-primary-soft border border-border p-5"
+    >
       {/* A mock "visitor at the gate" approval request card. */}
       <View className="gap-3 rounded-lg border border-border bg-surface p-4">
         <View className="flex-row items-center gap-3">
@@ -133,23 +142,32 @@ function BenefitVisual({
 
 function NotifyVisual({
   colors,
+  height,
 }: {
   colors: ReturnType<typeof useThemeColors>;
+  height: number;
 }) {
+  const bell = Math.round(height * 0.52);
   return (
-    <View className="h-60 items-center justify-center rounded-xl bg-primary-soft border border-border">
-      <View className="h-32 w-32 items-center justify-center rounded-full bg-surface border border-border">
-        <AppIcon name="bell-active" size={64} color={colors.primary} />
+    <View
+      style={{ height }}
+      className="items-center justify-center rounded-xl bg-primary-soft border border-border"
+    >
+      <View
+        style={{ height: bell, width: bell, borderRadius: bell / 2 }}
+        className="items-center justify-center bg-surface border border-border"
+      >
+        <AppIcon name="bell-active" size={Math.round(bell * 0.5)} color={colors.primary} />
       </View>
       {/* status dots — reinforce "alerts" without relying on color alone */}
       <View className="mt-4 flex-row items-center gap-2">
         <View className="flex-row items-center gap-1 rounded-pill bg-approve-bg px-2.5 py-1">
           <AppIcon name="check-circle" size={12} color={colors.approve} />
-          <Text className="text-caption text-approve">Visitor approved</Text>
+          <Text className="text-caption text-approve-text">Visitor approved</Text>
         </View>
         <View className="flex-row items-center gap-1 rounded-pill bg-warn-bg px-2.5 py-1">
           <AppIcon name="delivery" size={12} color={colors.warn} />
-          <Text className="text-caption text-warn">Parcel at gate</Text>
+          <Text className="text-caption text-warn-text">Parcel at gate</Text>
         </View>
       </View>
     </View>
@@ -159,18 +177,29 @@ function NotifyVisual({
 function SlideVisual({
   slideKey,
   colors,
+  height,
 }: {
   slideKey: Slide["key"];
   colors: ReturnType<typeof useThemeColors>;
+  height: number;
 }) {
-  if (slideKey === "welcome") return <WelcomeVisual />;
-  if (slideKey === "benefit") return <BenefitVisual colors={colors} />;
-  return <NotifyVisual colors={colors} />;
+  if (slideKey === "welcome") return <WelcomeVisual height={height} />;
+  if (slideKey === "benefit")
+    return <BenefitVisual colors={colors} height={height} />;
+  return <NotifyVisual colors={colors} height={height} />;
 }
 
 export default function Onboarding() {
   const router = useRouter();
   const colors = useThemeColors();
+  // Live window width: a module-scope Dimensions.get() snapshot leaves the
+  // paged FlatList mis-aligned after a rotation or split-screen resize.
+  const { width, height, isWide, contentMaxWidth } = useResponsive();
+  // A fixed 240pt art block crowds an iPhone SE and looks lost on a tablet.
+  const visualHeight = Math.round(
+    Math.min(Math.max(height * 0.28, 180), isWide ? 340 : 260),
+  );
+  const slideWidth = isWide ? Math.min(width, contentMaxWidth) : width;
   const listRef = useRef<FlatList<Slide>>(null);
   const [index, setIndex] = useState(0);
   const [busy, setBusy] = useState(false);
@@ -215,13 +244,13 @@ export default function Onboarding() {
   );
 
   const onMomentumEnd = (e: NativeSyntheticEvent<NativeScrollEvent>) => {
-    setIndex(Math.round(e.nativeEvent.contentOffset.x / width));
+    setIndex(Math.round(e.nativeEvent.contentOffset.x / slideWidth));
   };
 
   const isLast = index === SLIDES.length - 1;
 
   return (
-    <Screen className="justify-between pb-6">
+    <Screen edges={["top", "bottom"]} className="justify-between">
       <View className="flex-row items-center justify-between px-6 pt-4">
         <View className="flex-row items-center gap-2">
           <BrandMark size="sm" />
@@ -253,10 +282,17 @@ export default function Onboarding() {
         onViewableItemsChanged={onViewableItemsChanged}
         viewabilityConfig={viewConfig}
         renderItem={({ item }) => (
-          <View style={{ width }} className="justify-center gap-5 px-8">
-            <SlideVisual slideKey={item.key} colors={colors} />
+          <View
+            style={{ width: slideWidth }}
+            className="justify-center gap-5 px-8"
+          >
+            <SlideVisual
+              slideKey={item.key}
+              colors={colors}
+              height={visualHeight}
+            />
             <View className="gap-2">
-              <Text className="text-caption uppercase tracking-widest text-primary">
+              <Text className="text-caption uppercase tracking-widest text-primary-text">
                 {item.eyebrow}
               </Text>
               {item.title}
@@ -266,12 +302,18 @@ export default function Onboarding() {
         )}
       />
 
-      <View className="gap-4 px-6">
-        <View className="flex-row items-center justify-center gap-2">
+      <View className="gap-4 px-6 pb-2">
+        <View
+          accessibilityRole="progressbar"
+          accessibilityLabel={`Step ${index + 1} of ${SLIDES.length}`}
+          accessibilityValue={{ min: 1, max: SLIDES.length, now: index + 1 }}
+          className="flex-row items-center justify-center gap-2"
+        >
           {SLIDES.map((s, i) => (
             <View
               key={s.key}
-              accessibilityLabel={`Step ${i + 1} of ${SLIDES.length}`}
+              accessibilityElementsHidden
+              importantForAccessibility="no-hide-descendants"
               style={{
                 width: i === index ? 20 : 8,
                 height: 8,

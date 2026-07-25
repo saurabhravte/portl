@@ -128,6 +128,36 @@ export default function SignUp() {
     }
   };
 
+  /**
+   * Deferred verification. Creates the account now and moves the email check
+   * to `(auth)/pending-access`, so onboarding is never blocked by an inbox the
+   * user cannot reach right now.
+   *
+   * Whether this is permitted is a Clerk *instance* setting, not something the
+   * client can override: if "Email verification" is Required in the Clerk
+   * Dashboard, finalize() rejects an unverified sign-up. Set it to Optional to
+   * enable this path, otherwise we say so plainly instead of failing opaquely.
+   */
+  const skipVerification = async () => {
+    if (!signUp) return;
+    setBusy(true);
+    try {
+      const { error } = await signUp.finalize();
+      if (error) throw error;
+      router.replace("/");
+    } catch (error) {
+      Alert.alert(
+        "Verification still required",
+        clerkErrorMessage(
+          error,
+          "This workspace requires a verified email before the account can be used. Enter the code above to continue.",
+        ),
+      );
+    } finally {
+      setBusy(false);
+    }
+  };
+
   const resendCode = async () => {
     if (!signUp) return;
     setBusy(true);
@@ -234,7 +264,7 @@ export default function SignUp() {
                 >
                   <Text className="text-center text-label text-ink">
                     Already have an Account?{" "}
-                    <Text className="text-primary">Login</Text>
+                    <Text className="text-primary-text">Login</Text>
                   </Text>
                 </Pressable>
               </Link>
@@ -259,6 +289,12 @@ export default function SignUp() {
                 onPress={() => void onVerify()}
                 loading={busy}
                 disabled={code.length < 6}
+              />
+              <Button
+                title="I'll verify later"
+                variant="ghost"
+                onPress={() => void skipVerification()}
+                disabled={busy}
               />
               <Button
                 title="Resend code"

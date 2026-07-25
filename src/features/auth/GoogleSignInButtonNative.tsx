@@ -56,12 +56,17 @@ export function GoogleSignInButtonNative({
       if (code === "SIGN_IN_CANCELLED" || code === "-5" || code === "12501") {
         return;
       }
+      // A missing/mismatched OAuth client ID is by far the most common cause
+      // here, so name it rather than echoing Clerk's bare env-var error.
+      const raw = clerkErrorMessage(error, "");
+      const looksLikeConfig =
+        /client_?id|EXPO_PUBLIC_CLERK_GOOGLE|DEVELOPER_ERROR|10:/i.test(raw);
       Alert.alert(
         "Google sign-in failed",
-        clerkErrorMessage(
-          error,
-          "Could not sign in with Google. Check your Clerk + Google configuration.",
-        ),
+        looksLikeConfig
+          ? "Google sign-in isn't set up for this build. The OAuth client IDs are missing or don't match this app's bundle ID and signing certificate. Please use email sign-in for now."
+          : raw ||
+              "Could not sign in with Google. Please try again or use email sign-in.",
       );
     } finally {
       setBusy(false);

@@ -13,10 +13,12 @@ import * as Haptics from "expo-haptics";
 import { format } from "date-fns";
 import React, { useRef, useState } from "react";
 import { Alert, Pressable, Text, View } from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 type ScanMode = "guest" | "amenity" | "resident" | "helper";
 
 export default function CodeEntry() {
+  const insets = useSafeAreaInsets();
   const t = useT();
   const [code, setCode] = useState("");
   const [scanning, setScanning] = useState(false);
@@ -187,7 +189,7 @@ export default function CodeEntry() {
     helperCheckIn.isPending;
 
   return (
-    <Screen className="gap-4 p-4">
+    <Screen className="gap-4 p-4" keyboard>
       <OfflineBanner />
       <Text className="text-display text-ink">{t("have_code")}</Text>
       <View className="flex-row flex-wrap gap-2">
@@ -226,7 +228,10 @@ export default function CodeEntry() {
           />
           <Pressable
             onPress={() => setScanning(false)}
-            className="absolute bottom-2 self-center rounded-pill bg-ink px-4 py-2"
+            // bottom-2 put this under the home indicator on gesture-nav
+            // devices; the inset keeps it tappable on every handset.
+            style={{ bottom: Math.max(insets.bottom, 8) + 8 }}
+            className="absolute self-center rounded-pill bg-ink px-4 py-2"
           >
             <Text className="text-caption text-inverse">{t("cancel")}</Text>
           </Pressable>
@@ -270,7 +275,7 @@ export default function CodeEntry() {
       />
       {lastOk && (
         <Card className="border-approve bg-approve-bg">
-          <Text className="text-title text-approve">✓ {lastOk}</Text>
+          <Text className="text-title text-approve-text">✓ {lastOk}</Text>
         </Card>
       )}
     </Screen>

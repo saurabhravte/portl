@@ -1,0 +1,313 @@
+<!doctype html>
+<html lang="en" data-theme="auto">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Portl — know who's at the gate</title>
+<meta name="description" content="Portl connects your society's gate, its guards and every flat. Approve visitors in a tap, pay maintenance without a queue, keep the community in the loop." />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&family=IBM+Plex+Mono:wght@500&display=swap" rel="stylesheet" />
+<style>
+/* ─────────────────────────────────────────────────────────────────────
+   Tokens mirror src/theme/tokens.ts exactly, including the split between
+   fills and the darkened *-text variants. The orange fill is 2.69:1 on
+   paper and fails AA as text, so headline accents use --primary-text and
+   the CTA label is dark ink (6.32:1 on #F97316), never white (2.80:1).
+   ───────────────────────────────────────────────────────────────────── */
+:root{
+  --paper:#FAFAFA; --surface:#FFFFFF; --surface-alt:#F8F8F9; --border:#E4E4E7;
+  --ink:#18181B; --ink-soft:#3F3F46; --ink-muted:#71717A;
+  --primary:#F97316; --primary-soft:#FFF1E6; --primary-text:#C2410C; --on-primary:#18181B;
+  --accent:#0EA5E9; --accent-soft:#E0F2FE; --accent-text:#0369A1;
+  --approve:#16A34A; --approve-bg:#DCFCE7; --approve-text:#15803D;
+  --shadow:0 1px 2px rgba(24,24,27,.04), 0 12px 32px -12px rgba(24,24,27,.12);
+  --arch:184px;
+}
+:root[data-theme="dark"]{
+  --paper:#121212; --surface:#1E1E1F; --surface-alt:#26262A; --border:#2E2E32;
+  --ink:#EDEDED; --ink-soft:#D4D4D8; --ink-muted:#A1A1AA;
+  --primary:#FB923C; --primary-soft:#2A1B10; --primary-text:#FB923C; --on-primary:#121212;
+  --accent:#38BDF8; --accent-soft:#0C2A3A; --accent-text:#38BDF8;
+  --approve:#4ADE80; --approve-bg:#0F2A1A; --approve-text:#4ADE80;
+  --shadow:0 1px 2px rgba(0,0,0,.4), 0 12px 32px -12px rgba(0,0,0,.6);
+}
+@media (prefers-color-scheme:dark){
+  :root[data-theme="auto"]{
+    --paper:#121212; --surface:#1E1E1F; --surface-alt:#26262A; --border:#2E2E32;
+    --ink:#EDEDED; --ink-soft:#D4D4D8; --ink-muted:#A1A1AA;
+    --primary:#FB923C; --primary-soft:#2A1B10; --primary-text:#FB923C; --on-primary:#121212;
+    --accent:#38BDF8; --accent-soft:#0C2A3A; --accent-text:#38BDF8;
+    --approve:#4ADE80; --approve-bg:#0F2A1A; --approve-text:#4ADE80;
+    --shadow:0 1px 2px rgba(0,0,0,.4), 0 12px 32px -12px rgba(0,0,0,.6);
+  }
+}
+
+*,*::before,*::after{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{
+  margin:0; background:var(--paper); color:var(--ink);
+  font-family:"Outfit",system-ui,-apple-system,"Segoe UI",sans-serif;
+  /* 17px base: the audience runs 10 to 60, so nothing here goes below 14px. */
+  font-size:17px; line-height:1.6; font-weight:400;
+  -webkit-font-smoothing:antialiased;
+}
+.mono{font-family:"IBM Plex Mono",ui-monospace,SFMono-Regular,Menlo,monospace;font-weight:500}
+.wrap{width:min(1120px,100% - 2.5rem);margin-inline:auto}
+
+:focus-visible{outline:3px solid var(--accent);outline-offset:3px;border-radius:6px}
+
+/* ── Nav ─────────────────────────────────────────────────────────── */
+.nav{position:sticky;top:0;z-index:20;background:color-mix(in srgb,var(--paper) 88%,transparent);
+  backdrop-filter:blur(10px);border-bottom:1px solid var(--border)}
+.nav__in{display:flex;align-items:center;gap:1rem;min-height:68px}
+.brand{display:flex;align-items:center;gap:.6rem;font-weight:600;font-size:1.15rem;letter-spacing:-.02em;
+  color:var(--ink);text-decoration:none;margin-right:auto}
+.brand__mark{width:26px;height:26px;border-radius:999px 999px 5px 5px;background:var(--primary);
+  display:grid;place-items:center;flex:none}
+.brand__mark::after{content:"";width:8px;height:8px;border-radius:999px 999px 2px 2px;background:var(--on-primary)}
+.toggle{display:inline-flex;align-items:center;gap:.45rem;min-height:44px;padding:0 .9rem;
+  border:1px solid var(--border);background:var(--surface);color:var(--ink-soft);
+  border-radius:999px;font:inherit;font-size:.9rem;cursor:pointer}
+.toggle:hover{border-color:var(--ink-muted)}
+
+/* ── Buttons ─────────────────────────────────────────────────────── */
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:.5rem;
+  min-height:52px;padding:0 1.6rem;border-radius:14px;border:1px solid transparent;
+  font:inherit;font-weight:600;font-size:1.02rem;letter-spacing:-.01em;
+  text-decoration:none;cursor:pointer;transition:transform .16s ease,box-shadow .16s ease}
+.btn--primary{background:var(--primary);color:var(--on-primary);box-shadow:var(--shadow)}
+.btn--primary:hover{transform:translateY(-2px)}
+.btn--quiet{background:transparent;color:var(--ink);border-color:var(--border)}
+.btn--quiet:hover{border-color:var(--ink-muted)}
+
+/* ── Hero ────────────────────────────────────────────────────────── */
+.hero{padding:clamp(3.5rem,9vw,7rem) 0 clamp(3rem,7vw,5.5rem)}
+.hero__in{display:grid;grid-template-columns:1.05fr .95fr;gap:clamp(2rem,5vw,4.5rem);align-items:center}
+.eyebrow{display:inline-flex;align-items:center;gap:.55rem;font-size:.82rem;letter-spacing:.12em;
+  text-transform:uppercase;color:var(--primary-text);background:var(--primary-soft);
+  padding:.45rem .85rem;border-radius:999px;margin:0 0 1.4rem}
+h1{margin:0 0 1.25rem;font-size:clamp(2.6rem,6vw,4.15rem);line-height:1.03;
+  font-weight:600;letter-spacing:-.035em;text-wrap:balance}
+h1 em{font-style:normal;color:var(--primary-text)}
+.lede{margin:0 0 2rem;font-size:clamp(1.08rem,1.6vw,1.22rem);line-height:1.65;
+  color:var(--ink-soft);max-width:46ch;font-weight:300}
+.hero__cta{display:flex;flex-wrap:wrap;gap:.85rem;align-items:center}
+.hero__note{margin:1.4rem 0 0;font-size:.92rem;color:var(--ink-muted)}
+
+/* ── Signature: the arch ─────────────────────────────────────────
+   "Portl" is a portal. A residential gateway is an arch, so the hero
+   visual sits inside one and the feature cards echo its radius.      */
+.arch{position:relative;justify-self:center;width:min(360px,100%);
+  padding:2.2rem 1.6rem 1.6rem;background:var(--surface);
+  border:1px solid var(--border);border-radius:var(--arch) var(--arch) 22px 22px;
+  box-shadow:var(--shadow)}
+.arch::before{content:"";position:absolute;inset:11px 11px auto;height:calc(var(--arch) - 10px);
+  border:1px dashed var(--border);border-bottom:0;
+  border-radius:calc(var(--arch) - 12px) calc(var(--arch) - 12px) 0 0;pointer-events:none}
+.arch__label{text-align:center;font-size:.76rem;letter-spacing:.14em;text-transform:uppercase;
+  color:var(--ink-muted);margin:0 0 1.5rem}
+
+.pass{background:var(--surface-alt);border:1px solid var(--border);border-radius:16px;padding:1rem}
+.pass__row{display:flex;align-items:center;gap:.75rem}
+.pass__av{width:42px;height:42px;border-radius:999px;background:var(--accent-soft);color:var(--accent-text);
+  display:grid;place-items:center;font-weight:600;flex:none}
+.pass__who{font-weight:500;line-height:1.3}
+.pass__meta{font-size:.85rem;color:var(--ink-muted);line-height:1.4}
+.pass__acts{display:flex;gap:.5rem;margin-top:.9rem}
+.chip{flex:1;display:flex;align-items:center;justify-content:center;gap:.35rem;
+  min-height:40px;border-radius:999px;font-size:.9rem;font-weight:600;border:1px solid var(--border);
+  background:var(--surface);color:var(--ink-soft)}
+.chip--yes{background:var(--approve-bg);color:var(--approve-text);border-color:transparent}
+
+/* Status pairs colour with a glyph and a word — never colour alone. */
+.status{display:flex;align-items:center;justify-content:center;gap:.4rem;margin-top:1rem;
+  font-size:.88rem;font-weight:500;color:var(--ink-muted)}
+.status[data-state="approved"]{color:var(--approve-text)}
+
+/* One orchestrated moment: the pass rises through the arch, then resolves. */
+@keyframes rise{from{opacity:0;transform:translateY(26px)}to{opacity:1;transform:none}}
+.pass{animation:rise .7s cubic-bezier(.2,.7,.3,1) both .25s}
+.status{animation:rise .5s ease both 1.5s}
+
+/* ── Features ────────────────────────────────────────────────────── */
+.section{padding:clamp(3rem,7vw,5.5rem) 0;border-top:1px solid var(--border)}
+.section__head{max-width:52ch;margin:0 0 clamp(2rem,4vw,3rem)}
+h2{margin:0 0 .7rem;font-size:clamp(1.75rem,3.4vw,2.4rem);line-height:1.15;
+  font-weight:600;letter-spacing:-.03em}
+.section__head p{margin:0;color:var(--ink-soft);font-weight:300;font-size:1.08rem}
+
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(248px,1fr));gap:1.1rem}
+.card{background:var(--surface);border:1px solid var(--border);
+  border-radius:60px 60px 18px 18px;padding:2.4rem 1.6rem 1.7rem;text-align:center;
+  transition:border-color .18s ease,transform .18s ease}
+.card:hover{border-color:var(--primary);transform:translateY(-3px)}
+.card__ico{width:52px;height:52px;margin:0 auto 1.1rem;border-radius:999px;
+  background:var(--primary-soft);color:var(--primary-text);display:grid;place-items:center}
+.card h3{margin:0 0 .5rem;font-size:1.16rem;font-weight:600;letter-spacing:-.015em}
+.card p{margin:0;font-size:.98rem;color:var(--ink-soft);font-weight:300;line-height:1.6}
+
+/* ── Closing ─────────────────────────────────────────────────────── */
+.close{text-align:center}
+.close h2{margin-bottom:.9rem}
+.close p{max-width:48ch;margin:0 auto 2rem;color:var(--ink-soft);font-weight:300}
+
+footer{border-top:1px solid var(--border);padding:2.2rem 0 3rem;color:var(--ink-muted);font-size:.92rem}
+.foot{display:flex;flex-wrap:wrap;gap:1rem;align-items:center;justify-content:space-between}
+
+@media (max-width:860px){
+  .hero__in{grid-template-columns:1fr}
+  .arch{order:-1;width:min(320px,100%)}
+  h1{font-size:clamp(2.3rem,9vw,3rem)}
+}
+@media (prefers-reduced-motion:reduce){
+  *,*::before,*::after{animation:none !important;transition:none !important}
+  .btn:hover,.card:hover{transform:none}
+}
+</style>
+</head>
+<body>
+
+<header class="nav">
+  <div class="wrap nav__in">
+    <a class="brand" href="#top"><span class="brand__mark" aria-hidden="true"></span>Portl</a>
+    <button class="toggle" id="themeBtn" type="button" aria-live="polite">
+      <span id="themeIcon" aria-hidden="true">◐</span><span id="themeTxt">Auto</span>
+    </button>
+    <a class="btn btn--primary" href="#get" style="min-height:44px;padding:0 1.15rem;font-size:.95rem">Get Portl</a>
+  </div>
+</header>
+
+<main id="top">
+
+  <section class="hero">
+    <div class="wrap hero__in">
+      <div>
+        <p class="eyebrow">For gated societies</p>
+        <h1>Know who's at <em>the gate.</em></h1>
+        <p class="lede">
+          Portl connects your society's gate, its guards and every flat in it.
+          Approve visitors in a tap, pay maintenance without standing in a queue,
+          and keep the whole community in the loop.
+        </p>
+        <div class="hero__cta">
+          <a class="btn btn--primary" href="#get">Get Portl for your society</a>
+          <a class="btn btn--quiet" href="#how">See how it works</a>
+        </div>
+        <p class="hero__note">Works on any phone · Set up by your committee, not by you</p>
+      </div>
+
+      <!-- Signature: the gateway arch, holding the moment the product exists for. -->
+      <div class="arch" role="img"
+           aria-label="A visitor request from Gate 1 for flat A-101, approved.">
+        <p class="arch__label">Gate 1 · Live</p>
+        <div class="pass">
+          <div class="pass__row">
+            <div class="pass__av" aria-hidden="true">RK</div>
+            <div>
+              <div class="pass__who">Ravi Kumar · Delivery</div>
+              <div class="pass__meta">for flat <span class="mono">A-101</span> · <span class="mono">18:42</span></div>
+            </div>
+          </div>
+          <div class="pass__acts" aria-hidden="true">
+            <span class="chip">Deny</span>
+            <span class="chip chip--yes">✓ Approve</span>
+          </div>
+        </div>
+        <p class="status" data-state="approved">
+          <span aria-hidden="true">✓</span> Approved by you · <span class="mono">18:42</span>
+        </p>
+      </div>
+    </div>
+  </section>
+
+  <section class="section" id="how">
+    <div class="wrap">
+      <div class="section__head">
+        <h2>Everything the gate touches</h2>
+        <p>Four things a society does every single day, in one place instead of five WhatsApp groups.</p>
+      </div>
+      <div class="grid">
+
+        <article class="card">
+          <div class="card__ico" aria-hidden="true">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l7 3v6c0 4.2-2.9 7.5-7 9-4.1-1.5-7-4.8-7-9V6l7-3z"/><path d="M9 12l2 2 4-4"/></svg>
+          </div>
+          <h3>Visitor approvals</h3>
+          <p>Your guard logs whoever turns up. You get the request instantly and decide — no intercom, no guesswork.</p>
+        </article>
+
+        <article class="card">
+          <div class="card__ico" aria-hidden="true">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8a6 6 0 10-12 0c0 6-3 7-3 7h18s-3-1-3-7z"/><path d="M13.7 20a2 2 0 01-3.4 0"/></svg>
+          </div>
+          <h3>Alerts that arrive</h3>
+          <p>Deliveries, cabs, gate notices and emergencies reach the right people the moment they happen.</p>
+        </article>
+
+        <article class="card">
+          <div class="card__ico" aria-hidden="true">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="2.5" y="5" width="19" height="14" rx="2.5"/><path d="M2.5 10h19"/><path d="M6.5 15h4"/></svg>
+          </div>
+          <h3>Maintenance dues</h3>
+          <p>See what's owed, pay from your phone, and get a receipt you can still find six months later.</p>
+        </article>
+
+        <article class="card">
+          <div class="card__ico" aria-hidden="true">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11v3a1 1 0 001 1h2l4 4V6L6 10H4a1 1 0 00-1 1z"/><path d="M15.5 8.5a5 5 0 010 7"/><path d="M18.5 5.5a9 9 0 010 13"/></svg>
+          </div>
+          <h3>Notices &amp; polls</h3>
+          <p>Committee announcements, amenity bookings and society votes — visible to everyone, buried by no one.</p>
+        </article>
+
+      </div>
+    </div>
+  </section>
+
+  <section class="section close" id="get">
+    <div class="wrap">
+      <h2>Bring Portl to your society</h2>
+      <p>Your committee sets it up once. Residents just sign in and they're through the gate.</p>
+      <a class="btn btn--primary" href="mailto:hello@portl.app?subject=Portl%20for%20our%20society">Talk to us about your society</a>
+    </div>
+  </section>
+
+</main>
+
+<footer>
+  <div class="wrap foot">
+    <span>© 2026 Portl</span>
+    <span class="mono">hello@portl.app</span>
+  </div>
+</footer>
+
+<script>
+(function () {
+  var root = document.documentElement,
+      btn  = document.getElementById("themeBtn"),
+      ico  = document.getElementById("themeIcon"),
+      txt  = document.getElementById("themeTxt"),
+      order = ["auto", "light", "dark"],
+      icons = { auto: "◐", light: "☀", dark: "☾" },
+      names = { auto: "Auto", light: "Light", dark: "Dark" };
+
+  var saved = null;
+  try { saved = localStorage.getItem("portl-theme"); } catch (e) {}
+  apply(order.indexOf(saved) > -1 ? saved : "auto");
+
+  function apply(mode) {
+    root.setAttribute("data-theme", mode);
+    ico.textContent = icons[mode];
+    txt.textContent = names[mode];
+    btn.setAttribute("aria-label", "Colour theme: " + names[mode] + ". Activate to change.");
+    try { localStorage.setItem("portl-theme", mode); } catch (e) {}
+  }
+
+  btn.addEventListener("click", function () {
+    apply(order[(order.indexOf(root.getAttribute("data-theme")) + 1) % order.length]);
+  });
+})();
+</script>
+</body>
+</html>

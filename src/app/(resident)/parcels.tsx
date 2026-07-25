@@ -23,7 +23,7 @@ export default function ResidentParcels() {
 
   return (
     <Screen>
-      <ScrollView
+      <ScrollView keyboardShouldPersistTaps="handled"
         contentContainerClassName="gap-3 p-4 pb-8"
         refreshControl={
           <RefreshControl refreshing={isRefetching} onRefresh={() => void refetch()} />

@@ -2,46 +2,73 @@
 @import "uniwind";
 
 /*
- * Portl design system v3 — "Community Blue".
- * Inspired by the Portl gate imagery (day sky blue / night navy).
- * No purple or violet anywhere in the palette.
- * Semantic tokens; light values in @theme, dark values override the same
- * variables under prefers-color-scheme. The in-app theme switch drives this
- * via Appearance.setColorScheme() (src/stores/theme.ts).
+ * Portl design system v4 — "Warm Gate".
+ * Orange primary / zinc neutrals, sky as the secondary accent.
+ *
+ * Token contract
+ * --------------
+ * FILL tokens (--color-primary, --color-approve, …) carry the exact spec
+ * values. They are for backgrounds, borders, icons and chart series.
+ *
+ * TEXT tokens (--color-primary-text, --color-approve-text, …) are darkened
+ * variants of the SAME semantic role, for when the colour is used as text on
+ * paper/surface. In light mode the raw fills fail WCAG AA badly as text
+ * (orange 2.69:1, yellow 1.47:1), so never use a fill token via `text-*`.
+ * In dark mode the fills already clear AA, so the text tokens alias them.
+ *
+ * ON tokens (--color-on-primary, …) are labels drawn on top of a fill. Every
+ * brand fill is bright, so all on-* labels are dark ink — white on orange is
+ * 2.80:1 and fails.
+ *
+ * Dark values override the same variables under prefers-color-scheme; the
+ * in-app switch drives this via Appearance.setColorScheme() (src/stores/theme.ts).
  */
 @theme {
-  /* Brand — true blue (not indigo) */
-  --color-primary: #2563eb;        /* blue 600 — buttons, active tab, links */
-  --color-primary-soft: #eff6ff;   /* blue 50 — tinted chips / icon tiles   */
-  --color-on-primary: #ffffff;
+  /* Brand — Primary / CTA (orange) */
+  --color-primary: #f97316;        /* fills, CTA buttons, active tab */
+  --color-primary-soft: #fff1e6;   /* tinted chips / icon tiles      */
+  --color-primary-text: #c2410c;   /* 4.96:1 — orange used AS TEXT   */
+  --color-on-primary: #18181b;     /* 6.32:1 on #F97316              */
 
-  /* Vibrant 10% accent — indigo-violet, matches the Portl mockups.
-     Reserved for small high-signal components (Security tile, "wow" badges,
-     active onboarding dots). Never a large surface. */
-  --color-accent: #5b5bf0;
-  --color-accent-soft: #ececfe;
-  --color-on-accent: #ffffff;
+  /* Secondary accent (sky) */
+  --color-accent: #0ea5e9;
+  --color-accent-soft: #e0f2fe;
+  --color-accent-text: #0369a1;    /* 5.68:1 */
+  --color-on-accent: #18181b;      /* 6.39:1 */
 
   /* Surfaces */
-  --color-paper: #f5f8fc;          /* cool off-white app background */
-  --color-surface: #ffffff;        /* cards                     */
-  --color-surface-alt: #eef3f9;    /* inputs, secondary chips   */
-  --color-border: #d9e2ec;
+  --color-paper: #fafafa;
+  --color-surface: #ffffff;
+  --color-surface-alt: #f8f8f9;
+  --color-border: #e4e4e7;
 
   /* Ink */
-  --color-ink: #0f172a;
-  --color-ink-soft: #334155;
-  --color-ink-muted: #64748b;
-  --color-ink-faint: #94a3b8;
+  --color-ink: #18181b;            /* text primary   — 16.97:1 */
+  --color-ink-soft: #3f3f46;
+  --color-ink-muted: #71717a;      /* text secondary —  4.63:1 */
+  --color-ink-faint: #a1a1aa;      /* decorative only, not body text */
   --color-inverse: #ffffff;
 
-  /* Status */
+  /* Status — universal across all roles, never decorative */
   --color-approve: #16a34a;
-  --color-approve-bg: #e8f7ee;
-  --color-deny: #dc2626;
-  --color-deny-bg: #fdecec;
-  --color-warn: #d97706;
-  --color-warn-bg: #fdf3e3;
+  --color-approve-bg: #dcfce7;
+  --color-approve-text: #15803d;   /* 4.81:1 */
+  --color-on-approve: #18181b;
+
+  --color-deny: #ef4444;           /* error / SOS */
+  --color-deny-bg: #fee2e2;
+  --color-deny-text: #b91c1c;      /* 6.20:1 on paper, 5.30:1 on the deny tint */
+  --color-on-deny: #18181b;
+
+  --color-warn: #facc15;
+  --color-warn-bg: #fef9c3;
+  --color-warn-text: #854d0e;      /* 6.56:1 — yellow is unusable as text */
+  --color-on-warn: #18181b;
+
+  --color-info: #3b82f6;           /* badges */
+  --color-info-soft: #dbeafe;
+  --color-info-text: #1d4ed8;      /* 6.42:1 */
+  --color-on-info: #18181b;
 
   --radius-sm: 10px;
   --radius-md: 14px;
@@ -73,33 +100,50 @@
   --text-caption--font-weight: 500;
 }
 
-/* ── Dark mode — night gate palette (navy / charcoal, warm windows feel) ── */
+/* ── Dark mode ─────────────────────────────────────────────────────────
+   Every fill clears AA on #121212 (lowest is deny at 6.77:1), so the text
+   tokens alias the fills rather than darkening them.                    */
 @media (prefers-color-scheme: dark) {
   :root {
-    --color-primary: #3b82f6;      /* blue 500 pops on dark  */
-    --color-primary-soft: #152238;
-    --color-on-primary: #ffffff;
+    --color-primary: #fb923c;
+    --color-primary-soft: #2a1b10;
+    --color-primary-text: #fb923c;   /* 8.28:1 */
+    --color-on-primary: #121212;
 
-    --color-accent: #7c7cff;       /* glows on deep navy      */
-    --color-accent-soft: #1e2044;
-    --color-on-accent: #ffffff;
+    --color-accent: #38bdf8;
+    --color-accent-soft: #0c2a3a;
+    --color-accent-text: #38bdf8;    /* 8.74:1 */
+    --color-on-accent: #121212;
 
-    --color-paper: #0a1018;        /* deep navy app bg       */
-    --color-surface: #121a24;      /* card                   */
-    --color-surface-alt: #1a2433;  /* input / chip           */
-    --color-border: #273244;
+    --color-paper: #121212;
+    --color-surface: #1e1e1f;
+    --color-surface-alt: #26262a;
+    --color-border: #2e2e32;
 
-    --color-ink: #f1f5f9;
-    --color-ink-soft: #cbd5e1;
-    --color-ink-muted: #94a3b8;
-    --color-ink-faint: #64748b;
-    --color-inverse: #0a1018;
+    --color-ink: #ededed;
+    --color-ink-soft: #d4d4d8;
+    --color-ink-muted: #a1a1aa;
+    --color-ink-faint: #71717a;
+    --color-inverse: #121212;
 
-    --color-approve: #34d399;
-    --color-approve-bg: #0c2a1e;
+    --color-approve: #4ade80;
+    --color-approve-bg: #0f2a1a;
+    --color-approve-text: #4ade80;   /* 10.75:1 */
+    --color-on-approve: #121212;
+
     --color-deny: #f87171;
-    --color-deny-bg: #331416;
-    --color-warn: #fbbf24;
-    --color-warn-bg: #2e2410;
+    --color-deny-bg: #2e1516;
+    --color-deny-text: #f87171;      /* 6.77:1 */
+    --color-on-deny: #121212;
+
+    --color-warn: #fde047;
+    --color-warn-bg: #2c2610;
+    --color-warn-text: #fde047;      /* 14.21:1 */
+    --color-on-warn: #121212;
+
+    --color-info: #60a5fa;
+    --color-info-soft: #132139;
+    --color-info-text: #60a5fa;      /* 7.37:1 */
+    --color-on-info: #121212;
   }
 }

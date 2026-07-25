@@ -2,10 +2,11 @@ import { AppIcon } from "@/components/ui";
 import type { ReceiptData } from "@/features/payments/receipt";
 import { downloadReceiptPdf } from "@/features/payments/receiptPdf";
 import { formatMoney } from "@/lib/money";
+import { useResponsive } from "@/theme/useResponsive";
 import { useThemeColors } from "@/theme/useThemeColors";
 import React, { useState } from "react";
 import {
-  Dimensions,
+  useWindowDimensions,
   Modal,
   Pressable,
   ScrollView,
@@ -35,7 +36,8 @@ function TicketNotch({ side }: { side: "left" | "right" }) {
 }
 
 function DashedDivider({ color, width }: { color: string; width?: number }) {
-  const w = width ?? Dimensions.get("window").width;
+  const { width: windowWidth } = useWindowDimensions();
+  const w = width ?? windowWidth;
   const dash = 6;
   const gap = 5;
   const count = Math.ceil(w / (dash + gap));
@@ -100,7 +102,7 @@ function ReceiptSuccessGlyph() {
       <Circle cx={50} cy={50} r={11} fill={colors.approve} />
       <Path
         d="M45.5 50.2l3 3 6.5-6.5"
-        stroke="#FFFFFF"
+        stroke={colors.onApprove}
         strokeWidth={2.4}
         strokeLinecap="round"
         strokeLinejoin="round"
@@ -154,8 +156,9 @@ export function PaymentSuccessReceipt({
 }) {
   const colors = useThemeColors();
   const [downloading, setDownloading] = useState(false);
-  const screenW = Dimensions.get("window").width;
-  const cardW = Math.min(CARD_MAX_WIDTH, screenW - 40);
+  const { width: screenW, height: screenH } = useWindowDimensions();
+  const { gutter } = useResponsive();
+  const cardW = Math.min(CARD_MAX_WIDTH, screenW - gutter * 2);
 
   if (!receipt) return null;
 
@@ -229,9 +232,8 @@ export function PaymentSuccessReceipt({
 
             <ScrollView
               className="px-5"
-              style={{ maxHeight: Dimensions.get("window").height * 0.55 }}
-              showsVerticalScrollIndicator={false}
-            >
+              style={{ maxHeight: screenH * 0.55 }}
+              showsVerticalScrollIndicator={false} keyboardShouldPersistTaps="handled">
               <Text className="mb-1 text-label text-ink">Payment Details</Text>
               <DetailRow label="Invoice Number" value={receipt.invoiceNumber} />
               <DetailRow label="Order Time" value={receipt.orderTime} />
@@ -245,7 +247,7 @@ export function PaymentSuccessReceipt({
                   >
                     <Text
                       className="text-caption font-semibold"
-                      style={{ color: "#FFFFFF" }}
+                      style={{ color: colors.onApprove }}
                     >
                       {receipt.paymentStatus}
                     </Text>

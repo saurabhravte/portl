@@ -21,7 +21,7 @@ export default function Profile() {
 
   return (
     <Screen>
-      <ScrollView contentContainerClassName="gap-4 p-4 pb-10">
+      <ScrollView contentContainerClassName="gap-4 p-4 pb-10" keyboardShouldPersistTaps="handled">
       <BrandMark size="sm" />
       <Text className="text-display text-ink">Profile</Text>
       <Card>

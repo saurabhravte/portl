@@ -87,7 +87,7 @@ export default function ResidentHome() {
 
   return (
     <Screen>
-      <ScrollView
+      <ScrollView keyboardShouldPersistTaps="handled"
         className="flex-1"
         refreshControl={
           <RefreshControl
@@ -146,7 +146,7 @@ export default function ResidentHome() {
                   onPress={() => router.push("/(resident)/payments" as any)}
                   className="rounded-pill bg-surface px-5 py-2.5 active:opacity-80"
                 >
-                  <Text className="text-label text-primary">
+                  <Text className="text-label text-primary-text">
                     {nextDue.status === "claimed" ? "View" : "Pay Now"}
                   </Text>
                 </Pressable>
@@ -158,8 +158,7 @@ export default function ResidentHome() {
           <ScrollView
             horizontal
             showsHorizontalScrollIndicator={false}
-            contentContainerClassName="gap-3 pr-2"
-          >
+            contentContainerClassName="gap-3 pr-2" keyboardShouldPersistTaps="handled">
             <IconTile
               icon="visitors"
               label="Visitors"
@@ -208,7 +207,7 @@ export default function ResidentHome() {
                   router.push("/(resident)/pre-approvals?tab=pending" as any)
                 }
               >
-                <Text className="text-caption text-primary">See all</Text>
+                <Text className="text-caption text-primary-text">See all</Text>
               </Pressable>
             ) : null}
           </View>
@@ -330,7 +329,7 @@ export default function ResidentHome() {
                   <Text className="text-body text-ink-soft" numberOfLines={2}>
                     {latestNotice.body}
                   </Text>
-                  <Text className="text-caption text-primary">
+                  <Text className="text-caption text-primary-text">
                     View all notices →
                   </Text>
                 </Card>

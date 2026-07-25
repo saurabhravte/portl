@@ -22,7 +22,7 @@ export function PasswordStrengthHints({ password }: { password: string }) {
     <View className="gap-1.5 rounded-md border border-border bg-surface-alt p-3">
       <Text
         className={`text-caption font-semibold ${
-          isStrong ? "text-approve" : "text-ink-soft"
+          isStrong ? "text-approve-text" : "text-ink-soft"
         }`}
       >
         {isStrong
@@ -38,7 +38,7 @@ export function PasswordStrengthHints({ password }: { password: string }) {
           />
           <Text
             className={`text-caption ${
-              rule.ok ? "text-approve" : "text-ink-muted"
+              rule.ok ? "text-approve-text" : "text-ink-muted"
             }`}
           >
             {rule.label}

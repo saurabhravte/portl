@@ -1,4 +1,5 @@
 import { duePayableAmount, formatMoney } from "@/lib/money";
+import { lightColors as t } from "@/theme/tokens";
 import type { DueRow } from "@/features/community/hooks";
 import { format } from "date-fns";
 
@@ -91,7 +92,7 @@ export function buildReceiptHtml(receipt: ReceiptData): string {
     ? `${escapeHtml(receipt.period)} Maintenance · Flat ${escapeHtml(receipt.flatNumber)}`
     : `${escapeHtml(receipt.period)} Maintenance`;
   const society = receipt.societyName
-    ? `<p style="margin:4px 0 0;color:#6F7387;font-size:12px;">${escapeHtml(receipt.societyName)}</p>`
+    ? `<p style="margin:4px 0 0;color:${t.inkMuted};font-size:12px;">${escapeHtml(receipt.societyName)}</p>`
     : "";
 
   return `<!DOCTYPE html>
@@ -100,47 +101,49 @@ export function buildReceiptHtml(receipt: ReceiptData): string {
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Payment Receipt</title>
+  <!-- Printed artefact: always the LIGHT palette regardless of app scheme.
+       A dark receipt wastes ink and is unreadable on paper. -->
   <style>
     * { box-sizing: border-box; }
     body {
       margin: 0;
       padding: 32px 20px;
-      background: #F6F7FB;
+      background: ${t.paper};
       font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
-      color: #0F1222;
+      color: ${t.ink};
     }
     .card {
       max-width: 420px;
       margin: 0 auto;
-      background: #fff;
+      background: ${t.surface};
       border-radius: 16px;
       padding: 28px 24px 24px;
       box-shadow: 0 8px 24px rgba(15, 18, 34, 0.08);
     }
     .icon {
       width: 56px; height: 56px; margin: 0 auto 12px;
-      border-radius: 14px; background: #EFF6FF; color: #2563EB;
+      border-radius: 14px; background: ${t.primarySoft}; color: ${t.primaryText};
       display: flex; align-items: center; justify-content: center;
       font-size: 28px; font-weight: 700;
     }
     h1 { text-align: center; font-size: 22px; margin: 0 0 8px; }
     .divider {
-      border: none; border-top: 1.5px dashed #E7E8EF; margin: 18px 0;
+      border: none; border-top: 1.5px dashed ${t.border}; margin: 18px 0;
     }
     h2 { font-size: 15px; margin: 0 0 12px; }
     .row {
       display: flex; justify-content: space-between; gap: 12px;
       font-size: 13px; margin: 8px 0;
     }
-    .label { color: #6F7387; }
-    .value { color: #0F1222; font-weight: 600; text-align: right; }
-    .colon { color: #A4A8BA; margin: 0 6px; }
+    .label { color: ${t.inkMuted}; }
+    .value { color: ${t.ink}; font-weight: 600; text-align: right; }
+    .colon { color: ${t.inkFaint}; margin: 0 6px; }
     .badge {
-      display: inline-block; background: #16A34A; color: #fff;
+      display: inline-block; background: ${t.approve}; color: ${t.onApprove};
       border-radius: 999px; padding: 3px 10px; font-size: 11px; font-weight: 700;
     }
     .footer {
-      margin-top: 20px; text-align: center; color: #A4A8BA; font-size: 11px;
+      margin-top: 20px; text-align: center; color: ${t.inkMuted}; font-size: 11px;
     }
   </style>
 </head>

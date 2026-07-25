@@ -49,7 +49,7 @@ export function Countdown({
 
   return (
     <View className="gap-1">
-      <Text className={`text-caption ${urgent ? "text-deny" : "text-ink-muted"}`}>
+      <Text className={`text-caption ${urgent ? "text-deny-text" : "text-ink-muted"}`}>
         Auto-expires in {mm}:{ss}
       </Text>
       <View className="h-1 w-full overflow-hidden rounded-pill bg-surface-alt">

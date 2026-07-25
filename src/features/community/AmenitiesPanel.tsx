@@ -231,7 +231,7 @@ export function AmenitiesPanel({
                   Capacity: {a.capacity} · Daily timing: {timing}
                 </Text>
               </View>
-              <Text className="text-label text-primary">{priceLabel}</Text>
+              <Text className="text-label text-primary-text">{priceLabel}</Text>
             </View>
             {a.rules ? (
               <Text className="text-body text-ink-soft">{a.rules}</Text>

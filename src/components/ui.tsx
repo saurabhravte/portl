@@ -2,32 +2,102 @@ import { Ionicons } from "@expo/vector-icons";
 import React from "react";
 import {
   ActivityIndicator,
+  KeyboardAvoidingView,
+  Platform,
   Pressable,
   Text,
   TextInput,
   TextInputProps,
   View,
 } from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
+import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context";
 import { withUniwind } from "uniwind";
+import type { ColorToken } from "@/theme/tokens";
+import { useResponsive } from "@/theme/useResponsive";
 import { useThemeColors } from "@/theme/useThemeColors";
 
 const StyledSafeAreaView = withUniwind(SafeAreaView);
 
+/**
+ * Standard screen chrome: safe-area top, optional keyboard avoidance, and an
+ * optional centred max-width column so text does not run edge-to-edge on
+ * tablets.
+ *
+ * `edges` defaults to top only because most screens sit inside a tab
+ * navigator that already owns the bottom inset. Screens WITHOUT a tab bar
+ * (modals, auth, full-bleed scanners) should pass `edges={["top", "bottom"]}`
+ * or use `ScreenFooter` for a sticky CTA.
+ */
 export function Screen({
+  children,
+  className,
+  edges = ["top"],
+  keyboard = false,
+  centered = false,
+}: {
+  children: React.ReactNode;
+  className?: string;
+  edges?: ("top" | "bottom" | "left" | "right")[];
+  /** Wrap content so the keyboard pushes it up instead of covering inputs. */
+  keyboard?: boolean;
+  /** Cap and centre content width on large/tablet viewports. */
+  centered?: boolean;
+}) {
+  const { contentMaxWidth, isWide } = useResponsive();
+
+  let content = children;
+
+  if (centered && isWide) {
+    content = (
+      <View className="flex-1 items-center">
+        <View style={{ width: "100%", maxWidth: contentMaxWidth, flex: 1 }}>
+          {children}
+        </View>
+      </View>
+    );
+  }
+
+  if (keyboard) {
+    content = (
+      <KeyboardAvoidingView
+        style={{ flex: 1 }}
+        behavior={Platform.OS === "ios" ? "padding" : "height"}
+      >
+        {content}
+      </KeyboardAvoidingView>
+    );
+  }
+
+  return (
+    <StyledSafeAreaView
+      className={`flex-1 bg-paper ${className ?? ""}`}
+      edges={edges}
+    >
+      {content}
+    </StyledSafeAreaView>
+  );
+}
+
+/**
+ * Sticky bottom bar for primary actions. Adds the home-indicator inset to its
+ * own padding so the CTA is never sat under the gesture bar — the reason a
+ * fixed `pb-4` is not good enough on modern hardware.
+ */
+export function ScreenFooter({
   children,
   className,
 }: {
   children: React.ReactNode;
   className?: string;
 }) {
+  const insets = useSafeAreaInsets();
   return (
-    <StyledSafeAreaView
-      className={`flex-1 bg-paper ${className ?? ""}`}
-      edges={["top"]}
+    <View
+      className={`border-t border-border bg-surface px-4 pt-3 ${className ?? ""}`}
+      style={{ paddingBottom: Math.max(insets.bottom, 12) }}
     >
       {children}
-    </StyledSafeAreaView>
+    </View>
   );
 }
 
@@ -131,7 +201,7 @@ const btnFg: Record<ButtonVariant, string> = {
   ghost: "text-ink",
   approve: "text-on-primary",
   deny: "text-on-primary",
-  "deny-outline": "text-deny",
+  "deny-outline": "text-deny-text",
 };
 
 export function Button({
@@ -225,30 +295,61 @@ export function HeroCard({
 
 /* ── Badges & chips ──────────────────────────────────────────────────── */
 
+/**
+ * Badge tones. `fg` is always a *-text token, never a raw fill — the fills
+ * fail WCAG AA as text in light mode (orange 2.69:1, yellow 1.47:1).
+ *
+ * `icon` exists so a status is never conveyed by colour alone: the three
+ * universal states carry a glyph as well as the label, which keeps them
+ * readable for colour-blind users and in greyscale. Decorative tones
+ * (neutral / primary / accent / ink) deliberately have no icon.
+ */
 const badgeTone: Record<
-  "neutral" | "approve" | "deny" | "warn" | "ink" | "primary" | "accent",
-  { bg: string; fg: string }
+  "neutral" | "approve" | "deny" | "warn" | "info" | "ink" | "primary" | "accent",
+  { bg: string; fg: string; icon?: AppIconName }
 > = {
   neutral: { bg: "bg-surface-alt", fg: "text-ink-soft" },
-  approve: { bg: "bg-approve-bg", fg: "text-approve" },
-  deny: { bg: "bg-deny-bg", fg: "text-deny" },
-  warn: { bg: "bg-warn-bg", fg: "text-warn" },
+  approve: { bg: "bg-approve-bg", fg: "text-approve-text", icon: "check-circle" },
+  deny: { bg: "bg-deny-bg", fg: "text-deny-text", icon: "close" },
+  warn: { bg: "bg-warn-bg", fg: "text-warn-text", icon: "alert" },
+  info: { bg: "bg-info-soft", fg: "text-info-text", icon: "bell" },
   ink: { bg: "bg-ink", fg: "text-inverse" },
-  primary: { bg: "bg-primary-soft", fg: "text-primary" },
-  // Vibrant 10% accent — reserved for "wow" / high-signal chips.
-  accent: { bg: "bg-accent-soft", fg: "text-accent" },
+  primary: { bg: "bg-primary-soft", fg: "text-primary-text" },
+  accent: { bg: "bg-accent-soft", fg: "text-accent-text" },
+};
+
+/** Resolved hex for a badge's foreground, for the icon glyph. */
+const badgeIconColor: Record<string, ColorToken> = {
+  approve: "approveText",
+  deny: "denyText",
+  warn: "warnText",
+  info: "infoText",
 };
 
 export function Badge({
   label,
   tone = "neutral",
+  showIcon = true,
 }: {
   label: string;
   tone?: keyof typeof badgeTone;
+  /** Set false only where the surrounding row already carries a status glyph. */
+  showIcon?: boolean;
 }) {
   const t = badgeTone[tone];
+  const colors = useThemeColors();
+  const iconToken = badgeIconColor[tone];
   return (
-    <View className={`self-start rounded-pill px-3 py-1 ${t.bg}`}>
+    <View
+      className={`flex-row items-center gap-1 self-start rounded-pill px-3 py-1 ${t.bg}`}
+    >
+      {showIcon && t.icon ? (
+        <AppIcon
+          name={t.icon}
+          size={12}
+          color={iconToken ? colors[iconToken] : colors.inkSoft}
+        />
+      ) : null}
       <Text className={`text-caption ${t.fg}`}>{label}</Text>
     </View>
   );
@@ -344,7 +445,7 @@ export function Avatar({
       className="items-center justify-center rounded-pill bg-primary-soft"
       style={{ width: size, height: size }}
     >
-      <Text className="font-bold text-primary" style={{ fontSize: size * 0.36 }}>
+      <Text className="font-bold text-primary-text" style={{ fontSize: size * 0.36 }}>
         {initials}
       </Text>
     </View>
@@ -399,7 +500,7 @@ export function Field(
         ) : null}
       </View>
       {error ? (
-        <Text accessibilityRole="alert" className="text-caption text-deny">
+        <Text accessibilityRole="alert" className="text-caption text-deny-text">
           {error}
         </Text>
       ) : null}

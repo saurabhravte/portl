@@ -154,7 +154,7 @@ export default function InsightsRoute() {
                 Collection · {data.dues.period}
               </Text>
               <Pressable onPress={() => router.push("/(admin)/manage/dues" as never)}>
-                <Text className="text-caption text-primary">Open dues →</Text>
+                <Text className="text-caption text-primary-text">Open dues →</Text>
               </Pressable>
             </View>
             <View className="flex-row items-center gap-4">

@@ -252,7 +252,7 @@ function AppearanceSettings() {
               />
               <Text
                 className={`text-caption font-semibold ${
-                  selected ? "text-primary" : "text-ink-soft"
+                  selected ? "text-primary-text" : "text-ink-soft"
                 }`}
               >
                 {opt.label}

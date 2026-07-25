@@ -1,5 +1,6 @@
 import { AppIcon } from "@/components/ui";
 import { useRaiseSos } from "@/features/safety/hooks";
+import { useThemeColors } from "@/theme/useThemeColors";
 import * as Haptics from "expo-haptics";
 import React from "react";
 import { ActivityIndicator, Alert, Pressable, Text, View } from "react-native";
@@ -9,6 +10,7 @@ import { ActivityIndicator, Alert, Pressable, Text, View } from "react-native";
  * confirm dialog so it can't fire by accident, with a haptic on press.
  */
 export function SosButton({ kind = "sos" }: { kind?: "sos" | "panic" }) {
+  const colors = useThemeColors();
   const raise = useRaiseSos();
   const label = kind === "panic" ? "Panic alert" : "Emergency SOS";
   const blurb =
@@ -56,16 +58,16 @@ export function SosButton({ kind = "sos" }: { kind?: "sos" | "panic" }) {
       disabled={raise.isPending}
       className="flex-row items-center gap-3 rounded-lg bg-deny p-4 active:opacity-80"
     >
-      <View className="h-11 w-11 items-center justify-center rounded-pill bg-white/20">
+      <View className="h-11 w-11 items-center justify-center rounded-pill bg-black/10">
         {raise.isPending ? (
-          <ActivityIndicator color="#FFFFFF" />
+          <ActivityIndicator color={colors.onDeny} />
         ) : (
-          <AppIcon name="shield" size={24} color="#FFFFFF" />
+          <AppIcon name="shield" size={24} color={colors.onDeny} />
         )}
       </View>
       <View className="flex-1">
-        <Text className="text-title text-white">{label}</Text>
-        <Text className="text-caption text-white opacity-90">{blurb}</Text>
+        <Text className="text-title text-on-deny">{label}</Text>
+        <Text className="text-caption text-on-deny opacity-90">{blurb}</Text>
       </View>
     </Pressable>
   );

@@ -53,8 +53,8 @@ export default function GuardParcels() {
   };
 
   return (
-    <Screen>
-      <ScrollView contentContainerClassName="gap-4 p-4 pb-8">
+    <Screen keyboard>
+      <ScrollView contentContainerClassName="gap-4 p-4 pb-8" keyboardShouldPersistTaps="handled">
         <BackControl onPress={() => router.back()} />
         <Text className="text-display text-ink">Packages at gate</Text>
 

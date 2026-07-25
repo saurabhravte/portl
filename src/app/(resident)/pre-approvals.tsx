@@ -88,8 +88,7 @@ export default function VisitorRequests() {
         <ScrollView
           horizontal
           showsHorizontalScrollIndicator={false}
-          contentContainerClassName="gap-2"
-        >
+          contentContainerClassName="gap-2" keyboardShouldPersistTaps="handled">
           <Chip
             label={pendingCount ? `Pending (${pendingCount})` : "Pending"}
             selected={tab === "pending"}
@@ -109,7 +108,7 @@ export default function VisitorRequests() {
       </View>
 
       {tab === "pending" ? (
-        <ScrollView
+        <ScrollView keyboardShouldPersistTaps="handled"
           className="flex-1"
           refreshControl={
             <RefreshControl

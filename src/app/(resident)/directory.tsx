@@ -22,7 +22,7 @@ export default function DirectoryScreen() {
           Society staff and verified service providers.
         </Text>
       </View>
-      <ScrollView className="flex-1">
+      <ScrollView className="flex-1" keyboardShouldPersistTaps="handled">
         <View className="gap-3 p-4 pb-8">
           <DirectoryPanel />
         </View>

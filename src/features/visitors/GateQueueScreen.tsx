@@ -44,7 +44,7 @@ export function GateQueueScreen() {
 
   return (
     <Screen>
-      <ScrollView contentContainerClassName="gap-4 p-4">
+      <ScrollView contentContainerClassName="gap-4 p-4" keyboardShouldPersistTaps="handled">
         <BackControl label="Back to gate" onPress={() => router.back()} />
         <Text className="text-display text-ink">Offline queue</Text>
         <Text className="text-caption text-ink-muted">
@@ -76,7 +76,7 @@ export function GateQueueScreen() {
                 </Text>
               ) : null}
               {item.lastError ? (
-                <Text className="text-caption text-deny">{item.lastError}</Text>
+                <Text className="text-caption text-deny-text">{item.lastError}</Text>
               ) : null}
               <View className="flex-row gap-2">
                 <Button

@@ -33,7 +33,7 @@ export function AdminRoute({
 }) {
   const router = useRouter();
   return (
-    <Screen>
+    <Screen keyboard>
       <ScrollView className="flex-1" keyboardShouldPersistTaps="handled">
         <View className="gap-3 p-4 pb-10">
           <BackControl
@@ -69,7 +69,7 @@ export function FilterChips<T extends string>({
   return (
     <View className="gap-1">
       <Text className="text-caption text-ink-muted">{label}</Text>
-      <ScrollView horizontal showsHorizontalScrollIndicator={false} className="grow-0">
+      <ScrollView horizontal showsHorizontalScrollIndicator={false} className="grow-0" keyboardShouldPersistTaps="handled">
         <View accessibilityRole="radiogroup" className="flex-row gap-2">
           {options.map((option) => {
             const selected = option.value === value;

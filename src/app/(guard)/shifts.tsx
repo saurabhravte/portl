@@ -21,8 +21,8 @@ export default function GuardShifts() {
   };
 
   return (
-    <Screen>
-      <ScrollView contentContainerClassName="gap-3 p-4 pb-8">
+    <Screen keyboard>
+      <ScrollView contentContainerClassName="gap-3 p-4 pb-8" keyboardShouldPersistTaps="handled">
         <Text className="text-display text-ink">My shifts</Text>
         <SosButton kind="panic" />
         {shifts.isLoading ? <Skeleton /> : null}

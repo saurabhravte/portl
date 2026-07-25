@@ -90,7 +90,7 @@ function AdminCapabilityCard({
               if (restrict) setSelected([...ADMIN_CAPABILITIES]);
             }}
           >
-            <Text className="text-caption text-primary">
+            <Text className="text-caption text-primary-text">
               {restrict ? "Switch to full admin access" : "Limit to selected capabilities"}
             </Text>
           </Pressable>

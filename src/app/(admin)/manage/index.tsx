@@ -161,7 +161,7 @@ export default function ManageHome() {
 
   return (
     <Screen>
-      <ScrollView className="flex-1">
+      <ScrollView className="flex-1" keyboardShouldPersistTaps="handled">
         <View className="gap-4 p-4 pb-10">
           <View className="gap-1">
             <Text accessibilityRole="header" className="text-display text-ink">

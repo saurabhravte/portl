@@ -15,7 +15,7 @@ export default function Notices() {
 
   return (
     <Screen>
-      <ScrollView
+      <ScrollView keyboardShouldPersistTaps="handled"
         className="flex-1"
         refreshControl={
           <RefreshControl

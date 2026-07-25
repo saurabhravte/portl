@@ -34,8 +34,7 @@ export default function AmenitiesScreen() {
         <ScrollView
           horizontal
           showsHorizontalScrollIndicator={false}
-          contentContainerClassName="gap-2"
-        >
+          contentContainerClassName="gap-2" keyboardShouldPersistTaps="handled">
           {FILTERS.map((f) => (
             <Chip
               key={f.key}
@@ -46,7 +45,7 @@ export default function AmenitiesScreen() {
           ))}
         </ScrollView>
       </View>
-      <ScrollView className="flex-1">
+      <ScrollView className="flex-1" keyboardShouldPersistTaps="handled">
         <View className="gap-3 p-4 pb-8">
           <AmenitiesPanel categoryFilter={filter} />
         </View>

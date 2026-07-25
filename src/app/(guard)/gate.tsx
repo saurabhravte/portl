@@ -87,9 +87,9 @@ export default function Gate() {
     );
 
   return (
-    <Screen>
+    <Screen keyboard>
       <OfflineBanner />
-      <ScrollView
+      <ScrollView keyboardShouldPersistTaps="handled"
         contentContainerClassName="gap-4 p-4"
         refreshControl={
           <RefreshControl
@@ -259,7 +259,7 @@ export default function Gate() {
                 />
               )}
               {req.status === "denied" ? (
-                <Text className="text-caption text-deny">
+                <Text className="text-caption text-deny-text">
                   Resident denied entry. Do not admit without an audited admin override.
                 </Text>
               ) : null}

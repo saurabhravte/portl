@@ -29,7 +29,7 @@ export function ActiveSosBanner() {
     <View className="gap-2 rounded-lg border border-deny bg-deny-bg p-4">
       <View className="flex-row items-center gap-2">
         <Badge label={`${data.length} active`} tone="deny" />
-        <Text className="text-title text-deny">Emergency alerts</Text>
+        <Text className="text-title text-deny-text">Emergency alerts</Text>
       </View>
       {data.map((row) => (
         <View

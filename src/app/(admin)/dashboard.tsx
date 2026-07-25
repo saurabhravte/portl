@@ -66,7 +66,7 @@ export default function AdminDashboard() {
 
   return (
     <Screen>
-      <ScrollView className="flex-1">
+      <ScrollView className="flex-1" keyboardShouldPersistTaps="handled">
         <View className="gap-4 p-4">
           <View className="flex-row items-center justify-between">
             <Text className="text-display text-ink">Society overview</Text>
@@ -77,7 +77,7 @@ export default function AdminDashboard() {
             <Text className="text-caption text-ink-muted">Visitor history →</Text>
           </Pressable>
           <Pressable onPress={() => router.push("/(admin)/manage/insights" as any)}>
-            <Text className="text-caption text-primary">Analytics & insights →</Text>
+            <Text className="text-caption text-primary-text">Analytics & insights →</Text>
           </Pressable>
           {isLoading ? (
             <Skeleton height={120} />

@@ -124,8 +124,8 @@ export default function AdminNotices() {
   };
 
   return (
-    <Screen>
-      <ScrollView className="flex-1">
+    <Screen keyboard>
+      <ScrollView className="flex-1" keyboardShouldPersistTaps="handled">
         <View className="gap-4 p-4">
           <Text className="text-display text-ink">Notices</Text>
           <Card>

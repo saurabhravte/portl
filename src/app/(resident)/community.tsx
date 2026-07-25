@@ -72,8 +72,7 @@ export default function Community() {
       <ScrollView
         horizontal
         showsHorizontalScrollIndicator={false}
-        contentContainerClassName="gap-2"
-      >
+        contentContainerClassName="gap-2" keyboardShouldPersistTaps="handled">
         {TABS.map((t) => (
           <Chip
             key={t.key}
@@ -87,8 +86,7 @@ export default function Community() {
         <ScrollView
           horizontal
           showsHorizontalScrollIndicator={false}
-          contentContainerClassName="gap-2"
-        >
+          contentContainerClassName="gap-2" keyboardShouldPersistTaps="handled">
           {AMENITY_FILTERS.map((f) => (
             <Chip
               key={f.key}
@@ -99,7 +97,7 @@ export default function Community() {
           ))}
         </ScrollView>
       ) : null}
-      <ScrollView className="flex-1">
+      <ScrollView className="flex-1" keyboardShouldPersistTaps="handled">
         <View className="gap-3 pb-8">
           {tab === "feed" ? <FeedPanel /> : null}
           {tab === "polls" ? <PollsPanel /> : null}

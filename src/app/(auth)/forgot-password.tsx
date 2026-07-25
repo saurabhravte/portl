@@ -120,7 +120,7 @@ export default function ForgotPassword() {
   };
 
   return (
-    <Screen className="justify-center gap-4 p-6">
+    <Screen className="justify-center gap-4 p-6" keyboard>
       <Text className="text-title text-ink">Reset your password</Text>
       {stage === "identifier" ? (
         <>

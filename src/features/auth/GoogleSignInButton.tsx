@@ -1,3 +1,7 @@
+import {
+  googleAuthSetupHint,
+  isGoogleSignInConfigured,
+} from "@/features/auth/googleAuthConfig";
 import { isRunningInExpoGo } from "expo";
 import React from "react";
 import { Platform, Text, View } from "react-native";
@@ -19,6 +23,23 @@ export function GoogleSignInButton(props: Props) {
     isRunningInExpoGo() ||
     (Platform.OS !== "ios" && Platform.OS !== "android")
   ) {
+    return null;
+  }
+
+  // Without OAuth client IDs the native flow throws a bare
+  // "missing EXPO_PUBLIC_CLERK_GOOGLE_WEB_CLIENT_ID" the moment the user taps.
+  // Hide the button instead so email/password stays the obvious path, and in
+  // dev surface exactly which keys are absent.
+  if (!isGoogleSignInConfigured()) {
+    if (__DEV__) {
+      return (
+        <View className="rounded-md border border-warn bg-warn-bg px-3 py-2">
+          <Text className="text-caption text-warn-text">
+            {googleAuthSetupHint()}
+          </Text>
+        </View>
+      );
+    }
     return null;
   }
 

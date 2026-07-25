@@ -13,6 +13,7 @@ import {
 import { useDecide, useVisitorRequest } from "@/features/visitors/hooks";
 import { useSetRequestHandling } from "@/features/visitors/insights";
 import { VisitorTimeline } from "@/features/visitors/VisitorTimeline";
+import { useThemeColors } from "@/theme/useThemeColors";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import React from "react";
 import { Alert, Linking, Pressable, Text, View } from "react-native";
@@ -30,6 +31,7 @@ const typeLabel = {
  * Deep link: /(resident)/approve?requestId=<uuid>
  */
 export default function ApproveScreen() {
+  const colors = useThemeColors();
   const { requestId } = useLocalSearchParams<{ requestId: string }>();
   const {
     data: req,
@@ -96,7 +98,7 @@ export default function ApproveScreen() {
                 <AppIcon
                   name="person"
                   size={44}
-                  color="#6F7387"
+                  color={colors.inkMuted}
                 />
                 <Text className="text-caption text-ink-muted">No photo</Text>
               </View>

@@ -124,8 +124,7 @@ export default function Helpdesk() {
             <ScrollView
               horizontal
               showsHorizontalScrollIndicator={false}
-              contentContainerClassName="gap-2"
-            >
+              contentContainerClassName="gap-2" keyboardShouldPersistTaps="handled">
               {(["all", "open", "in_progress", "resolved"] as const).map(
                 (f) => (
                   <Chip
@@ -261,7 +260,7 @@ function TicketCard({ ticket: t }: { ticket: TicketRow }) {
         </Text>
         {!t.first_response_at && t.status !== "closed" ? (
           <Text
-            className={`text-caption ${slaBreached(t.created_at, t.first_response_at) ? "text-deny" : "text-ink-muted"}`}
+            className={`text-caption ${slaBreached(t.created_at, t.first_response_at) ? "text-deny-text" : "text-ink-muted"}`}
           >
             First-response SLA: {slaAgeLabel(t.created_at)}
             {slaBreached(t.created_at, t.first_response_at)
@@ -269,7 +268,7 @@ function TicketCard({ ticket: t }: { ticket: TicketRow }) {
               : " · target under 24h"}
           </Text>
         ) : t.first_response_at ? (
-          <Text className="text-caption text-approve">
+          <Text className="text-caption text-approve-text">
             Team responded {formatDistanceToNow(new Date(t.first_response_at))}{" "}
             ago
           </Text>
@@ -285,8 +284,7 @@ function TicketCard({ ticket: t }: { ticket: TicketRow }) {
             <ScrollView
               horizontal
               showsHorizontalScrollIndicator={false}
-              contentContainerClassName="gap-2"
-            >
+              contentContainerClassName="gap-2" keyboardShouldPersistTaps="handled">
               {t.photos.map((photo) => (
                 <PrivateMediaImage
                   key={photo}

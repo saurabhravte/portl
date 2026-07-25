@@ -50,3 +50,6 @@ app-example
 # generated native folders
 /ios
 /android
+
+# npm lockfile: this project uses bun (bun.lock)
+package-lock.json

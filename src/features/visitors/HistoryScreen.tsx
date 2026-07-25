@@ -127,7 +127,7 @@ export function VisitorHistoryScreen({
                 </Text>
               ) : null}
               {item.override_reason ? (
-                <Text className="text-caption text-deny">
+                <Text className="text-caption text-deny-text">
                   Override reason: {item.override_reason}
                 </Text>
               ) : null}

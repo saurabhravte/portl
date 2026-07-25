@@ -229,7 +229,7 @@ export default function SignIn() {
                 >
                   <Text className="text-center text-label text-ink">
                     Forgotten your password?{" "}
-                    <Text className="text-primary">Reset Password</Text>
+                    <Text className="text-primary-text">Reset Password</Text>
                   </Text>
                 </Pressable>
               </Link>
@@ -246,7 +246,7 @@ export default function SignIn() {
                 >
                   <Text className="text-center text-label text-ink">
                     I don't have an account,{" "}
-                    <Text className="text-primary">Sign up</Text>
+                    <Text className="text-primary-text">Sign up</Text>
                   </Text>
                 </Pressable>
               </Link>

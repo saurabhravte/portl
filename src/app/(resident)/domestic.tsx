@@ -38,7 +38,7 @@ export default function DomesticHelpRoute() {
   const [showCodeFor, setShowCodeFor] = useState<string | null>(null);
 
   return (
-    <Screen>
+    <Screen keyboard>
       <ScrollView className="flex-1" keyboardShouldPersistTaps="handled">
         <View className="gap-3 p-4 pb-10">
           <Button title="← Profile" variant="ghost" onPress={() => router.back()} />

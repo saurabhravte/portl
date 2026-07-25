@@ -178,12 +178,12 @@ function BulkImport() {
         </Text>
       ) : null}
       {validation.issues.slice(0, 5).map((issue) => (
-        <Text key={`${issue.line}-${issue.message}`} accessibilityRole="alert" className="text-caption text-deny">
+        <Text key={`${issue.line}-${issue.message}`} accessibilityRole="alert" className="text-caption text-deny-text">
           Line {issue.line}: {issue.message}
         </Text>
       ))}
       {validation.issues.length > 5 ? (
-        <Text className="text-caption text-deny">And {validation.issues.length - 5} more issues.</Text>
+        <Text className="text-caption text-deny-text">And {validation.issues.length - 5} more issues.</Text>
       ) : null}
       <View className="flex-row gap-2">
         <Button title="Cancel" variant="ghost" className="grow" onPress={() => setOpen(false)} />

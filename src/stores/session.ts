@@ -12,7 +12,22 @@ export interface Profile {
   expo_push_token: string | null;
 }
 
-export type ProfileStatus = "loading" | "linked" | "unlinked" | "failed";
+/**
+ * - loading              first fetch in flight
+ * - linked               profile found, user belongs to a society
+ * - pendingVerification  signed in, but no verified phone/email yet, so an
+ *                        invite claim cannot even be attempted. Recoverable
+ *                        by the user; never a dead end.
+ * - unlinked             identity IS verified but no invite matched. Needs an
+ *                        admin to invite them.
+ * - failed               network/RPC error
+ */
+export type ProfileStatus =
+  | "loading"
+  | "linked"
+  | "pendingVerification"
+  | "unlinked"
+  | "failed";
 
 interface SessionState {
   profile: Profile | null;
@@ -23,6 +38,7 @@ interface SessionState {
   setProfileLoading: () => void;
   setLinkedProfile: (profile: Profile) => void;
   setProfileUnlinked: () => void;
+  setProfilePendingVerification: () => void;
   setProfileFailed: (message: string) => void;
   resetProfile: () => void;
   retryProfile: () => void;
@@ -45,6 +61,12 @@ export const useSessionStore = create<SessionState>((set) => ({
     set({ profile, profileStatus: "linked", profileError: null }),
   setProfileUnlinked: () =>
     set({ profile: null, profileStatus: "unlinked", profileError: null }),
+  setProfilePendingVerification: () =>
+    set({
+      profile: null,
+      profileStatus: "pendingVerification",
+      profileError: null,
+    }),
   setProfileFailed: (profileError) =>
     set({ profile: null, profileStatus: "failed", profileError }),
   resetProfile: () =>

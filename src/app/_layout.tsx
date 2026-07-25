@@ -50,6 +50,7 @@ import * as Notifications from "expo-notifications";
 import { Stack, useRouter } from "expo-router";
 import * as SplashScreen from "expo-splash-screen";
 import { StatusBar } from "expo-status-bar";
+import * as SystemUI from "expo-system-ui";
 import React, { useEffect } from "react";
 import { ActivityIndicator, Alert, Text, useColorScheme, View } from "react-native";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
@@ -111,6 +112,7 @@ function RoleGate({ children }: { children: React.ReactNode }) {
     setProfileLoading,
     setLinkedProfile,
     setProfileUnlinked,
+    setProfilePendingVerification,
     setProfileFailed,
     resetProfile,
     retryProfile,
@@ -162,8 +164,18 @@ function RoleGate({ children }: { children: React.ReactNode }) {
 
       // Request a claim using a Clerk-verified primary identifier. This value is
       // only a hint: claim_invite must match it against verified JWT claims.
+      //
+      // Verification stays MANDATORY here on purpose. Relaxing it would let a
+      // user claim an invite addressed to an email or phone they do not own.
+      // What changed is the failure mode: an unverified user is now a
+      // recoverable `pendingVerification` state routed to a screen that lets
+      // them verify, rather than a dead end demanding an admin invite.
       if (!prof) {
         const identity = getVerifiedPrimaryIdentity(user);
+        if (!identity) {
+          setProfilePendingVerification();
+          return;
+        }
         if (identity) {
           const claimInput = parseInput(inviteClaimInputSchema, {
             identityType: identity.type,
@@ -252,6 +264,7 @@ function RoleGate({ children }: { children: React.ReactNode }) {
     setProfileFailed,
     setProfileLoading,
     setProfileUnlinked,
+    setProfilePendingVerification,
   ]);
 
   useEffect(() => {
@@ -397,6 +410,13 @@ function RootLayout() {
   useEffect(() => {
     if (loaded || error) SplashScreen.hideAsync();
   }, [loaded, error]);
+
+  // Paint the native root view to match the scheme. Without this the window
+  // behind the React tree stays white, which flashes on cold start and during
+  // stack transitions in dark mode.
+  useEffect(() => {
+    SystemUI.setBackgroundColorAsync(colors.paper).catch(() => {});
+  }, [colors.paper]);
 
   if (!loaded && !error) return null;
 

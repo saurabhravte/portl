@@ -57,8 +57,8 @@ export default function ResidentGroupPass() {
   };
 
   return (
-    <Screen>
-      <ScrollView contentContainerClassName="gap-4 p-4 pb-8">
+    <Screen keyboard>
+      <ScrollView contentContainerClassName="gap-4 p-4 pb-8" keyboardShouldPersistTaps="handled">
         <BackControl onPress={() => router.back()} />
         <View>
           <Text className="text-display text-ink">Group & event passes</Text>

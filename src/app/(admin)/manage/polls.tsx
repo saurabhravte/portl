@@ -106,7 +106,7 @@ export default function PollsRoute() {
         <Field label="Options (2–6, comma separated)" value={optionsText} onChangeText={setOptionsText} />
         <Field label="Quorum percent" value={quorum} onChangeText={setQuorum} keyboardType="number-pad" />
         {!validOptions || !validQuorum ? (
-          <Text className="text-caption text-deny">Use 2–6 unique options and a quorum from 0–100.</Text>
+          <Text className="text-caption text-deny-text">Use 2–6 unique options and a quorum from 0–100.</Text>
         ) : null}
         <DateTimeField label="Opens at" value={opensAt} minimumDate={new Date()} onChange={setOpensAt} />
         <DateTimeField label="Closes at" value={closesAt} minimumDate={opensAt} onChange={setClosesAt} />

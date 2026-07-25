@@ -80,12 +80,12 @@ export default function DuesRoute() {
         <Field label="Period" value={period} onChangeText={setPeriod} placeholder="2026-07" />
         <Field label="Amount (₹)" value={amount} onChangeText={setAmount} keyboardType="decimal-pad" />
         {!validPeriod && period ? (
-          <Text accessibilityRole="alert" className="text-caption text-deny">
+          <Text accessibilityRole="alert" className="text-caption text-deny-text">
             Use a valid period in YYYY-MM format.
           </Text>
         ) : null}
         {!validAmount && amount ? (
-          <Text accessibilityRole="alert" className="text-caption text-deny">
+          <Text accessibilityRole="alert" className="text-caption text-deny-text">
             Amount must be greater than zero.
           </Text>
         ) : null}

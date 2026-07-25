@@ -64,7 +64,7 @@ export function PrivacyControls({ onDeletionRequested }: { onDeletionRequested: 
       ) : null}
       {deletion?.status === "pending" || deletion?.status === "held" ? (
         <>
-          <Text className="text-caption text-deny">
+          <Text className="text-caption text-deny-text">
             Deletion {deletion.status === "held" ? "is paused by a legal hold" : `is scheduled after ${format(new Date(deletion.execute_after), "d MMM yyyy")}`}.
           </Text>
           {deletion.status === "pending" ? (

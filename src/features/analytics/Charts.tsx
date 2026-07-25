@@ -3,7 +3,9 @@
  * (https://evilcharts.com/docs) — design-first bars/heatmaps.
  * EvilCharts itself is Recharts + shadcn (web); Portl uses Expo RN + SVG.
  */
+import { getChartScale } from "@/theme/tokens";
 import { useThemeColors } from "@/theme/useThemeColors";
+import { useColorScheme } from "react-native";
 import React, { useMemo } from "react";
 import { Text, View } from "react-native";
 import Svg, { Circle, Rect } from "react-native-svg";
@@ -77,6 +79,7 @@ export function TrafficHeatmap({
   cells: { dow: number; hour: number; count: number }[];
 }) {
   const colors = useThemeColors();
+  const scale = getChartScale(useColorScheme());
   const max = Math.max(1, ...cells.map((c) => c.count), 1);
   const map = useMemo(() => {
     const m = new Map<string, number>();
@@ -95,12 +98,12 @@ export function TrafficHeatmap({
   const height = dows.length * (cellH + gap);
 
   const fillFor = (count: number) => {
-    if (count <= 0) return colors.surfaceAlt;
+    if (count <= 0) return scale[0];
     const t = count / max;
-    if (t < 0.25) return "#BFDBFE";
-    if (t < 0.5) return "#60A5FA";
-    if (t < 0.75) return "#2563EB";
-    return "#1E3A8A";
+    if (t < 0.25) return scale[1];
+    if (t < 0.5) return scale[2];
+    if (t < 0.75) return scale[3];
+    return scale[4];
   };
 
   return (
