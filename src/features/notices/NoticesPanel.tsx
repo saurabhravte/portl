@@ -11,6 +11,7 @@ import {
   type NoticeRow,
 } from "@/features/notices/hooks";
 import { useSessionStore } from "@/stores/session";
+import { FlashList } from "@shopify/flash-list";
 import { format } from "date-fns";
 import React, { useState } from "react";
 import { Linking, Pressable, Text, View } from "react-native";
@@ -48,11 +49,14 @@ export function NoticesPanel() {
     );
 
   return (
-    <>
-      {data.map((notice) => (
-        <NoticeCard key={notice.id} notice={notice} />
-      ))}
-    </>
+    <View style={{ minHeight: 240, flexGrow: 1 }}>
+      <FlashList
+        data={data}
+        keyExtractor={(notice) => notice.id}
+        ItemSeparatorComponent={() => <View className="h-3" />}
+        renderItem={({ item }) => <NoticeCard notice={item} />}
+      />
+    </View>
   );
 }
 
@@ -74,7 +78,7 @@ function NoticeCard({ notice }: { notice: NoticeRow }) {
         accessibilityLabel={`${open ? "Collapse" : "Read"} notice ${notice.title}`}
         onPress={toggle}
       >
-          <View className="flex-row items-center justify-between gap-2">
+        <View className="flex-row items-center justify-between gap-2">
           <Text className="flex-1 text-title text-ink">{notice.title}</Text>
           <View className="flex-row gap-1">
             {notice.pinned_at ? <Badge label="Pinned" tone="primary" /> : null}

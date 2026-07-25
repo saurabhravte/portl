@@ -39,6 +39,8 @@ const raisePayloadSchema = z.strictObject({
   phone: z.string().regex(/^\+[1-9]\d{7,14}$/).optional(),
   vehicleNo: z.string().trim().max(16).optional(),
   photoUrl: z.string().trim().max(2048).optional(),
+  /** Local file URI captured offline; uploaded on reconnect before raise. */
+  photoLocalUri: z.string().trim().max(2048).optional(),
 });
 export const queuedGateActionSchema = z.discriminatedUnion("kind", [
   queueBaseSchema.extend({ kind: z.literal("raise_visitor"), payload: raisePayloadSchema }),
@@ -78,6 +80,7 @@ export type QueuedGateAction =
         phone?: string;
         vehicleNo?: string;
         photoUrl?: string;
+        photoLocalUri?: string;
       };
     })
   | (QueueBase & {
@@ -112,6 +115,7 @@ export type NewQueuedGateAction = QueueScope &
           phone?: string;
           vehicleNo?: string;
           photoUrl?: string;
+          photoLocalUri?: string;
         };
       }
     | { kind: "mark_entry"; payload: { requestId: string } }

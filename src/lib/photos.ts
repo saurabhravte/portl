@@ -44,7 +44,7 @@ export async function createPrivateMediaUrl(
  * fast on 3G (review §5.6): resize to ≤1280px wide and re-encode at 70% JPEG.
  * Backend-agnostic — used by both the ImageKit and Supabase upload paths.
  */
-async function pickAndCompressImage(): Promise<CompressedAsset | null> {
+export async function pickAndCompressImage(): Promise<CompressedAsset | null> {
   const permission = await ImagePicker.requestCameraPermissionsAsync();
   if (!permission.granted) {
     const lib = await ImagePicker.requestMediaLibraryPermissionsAsync();
@@ -115,6 +115,20 @@ export async function pickAndUploadPhoto(
 
   const asset = await pickAndCompressImage();
   if (!asset) return null;
+  return uploadPhotoAsset(supabase, folder, asset);
+}
+
+/** Upload a previously captured local asset (e.g. offline photo on reconnect). */
+export async function uploadPhotoAsset(
+  supabase: AppSupabaseClient,
+  folder: "visitors" | "tickets" | "notices" | "polls",
+  asset: CompressedAsset,
+): Promise<string | null> {
+  folder = parseInput(z.enum(["visitors", "tickets", "notices", "polls"]), folder);
+  const profile = useSessionStore.getState().profile;
+  if (!profile) {
+    return null;
+  }
 
   // ── ImageKit backend ──────────────────────────────────────────────────
   if (isImageKitConfigured()) {

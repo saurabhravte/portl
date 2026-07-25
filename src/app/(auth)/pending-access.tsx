@@ -67,7 +67,21 @@ export default function PendingAccess() {
         {needsVerification ? (
           <ContactDetailsSection emphasis="onboarding" />
         ) : (
-          <Button title="Check again" onPress={retryProfile} />
+          <View className="gap-3">
+            <View className="rounded-md border border-deny bg-deny-bg px-3 py-3">
+              <Text className="text-label text-deny-text">
+                No society profile linked
+              </Text>
+              <Text className="mt-1 text-caption text-ink-soft">
+                Your Clerk account is signed in, but it is not mapped in{" "}
+                <Text className="text-ink">demo_seed.sql</Text>. Wrong subject
+                IDs look like an empty app — not an auth error. Re-run seed with
+                your Clerk <Text className="text-ink">user_…</Text> subjects, then
+                tap Check again.
+              </Text>
+            </View>
+            <Button title="Check again" onPress={retryProfile} />
+          </View>
         )}
 
         <Button

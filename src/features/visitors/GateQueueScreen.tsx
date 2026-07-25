@@ -9,9 +9,10 @@ import {
 import { flushGateQueue, useOfflineQueue } from "@/lib/offline";
 import { scopedQueue } from "@/lib/offlineQueue";
 import { useSupabase } from "@/lib/supabase";
+import { FlashList } from "@shopify/flash-list";
 import { useRouter } from "expo-router";
 import { useState } from "react";
-import { Alert, ScrollView, Text, View } from "react-native";
+import { Alert, Text, View } from "react-native";
 
 const actionLabel = {
   raise_visitor: "Raise visitor request",
@@ -44,7 +45,7 @@ export function GateQueueScreen() {
 
   return (
     <Screen>
-      <ScrollView contentContainerClassName="gap-4 p-4" keyboardShouldPersistTaps="handled">
+      <View className="flex-1 gap-4 p-4">
         <BackControl label="Back to gate" onPress={() => router.back()} />
         <Text className="text-display text-ink">Offline queue</Text>
         <Text className="text-caption text-ink-muted">
@@ -54,66 +55,76 @@ export function GateQueueScreen() {
         {!items.length ? (
           <EmptyState title="No queued gate actions" />
         ) : (
-          items.map((item) => (
-            <Card key={item.id}>
-              <View className="flex-row items-center justify-between gap-2">
-                <Text className="flex-1 text-title text-ink">
-                  {actionLabel[item.kind]}
+          <FlashList
+            data={items}
+            keyExtractor={(item) => item.id}
+            contentContainerStyle={{ paddingBottom: 24 }}
+            ItemSeparatorComponent={() => <View className="h-3" />}
+            renderItem={({ item }) => (
+              <Card>
+                <View className="flex-row items-center justify-between gap-2">
+                  <Text className="flex-1 text-title text-ink">
+                    {actionLabel[item.kind]}
+                  </Text>
+                  <Badge
+                    label={item.status === "dead" ? "Needs review" : "Pending"}
+                    tone={item.status === "dead" ? "deny" : "neutral"}
+                  />
+                </View>
+                <Text className="text-caption text-ink-muted">
+                  Queued {new Date(item.queuedAt).toLocaleString()} · attempts{" "}
+                  {item.attempts}
                 </Text>
-                <Badge
-                  label={item.status === "dead" ? "Needs review" : "Pending"}
-                  tone={item.status === "dead" ? "deny" : "neutral"}
-                />
-              </View>
-              <Text className="text-caption text-ink-muted">
-                Queued {new Date(item.queuedAt).toLocaleString()} · attempts{" "}
-                {item.attempts}
-              </Text>
-              {item.kind === "raise_visitor" ? (
-                <Text className="text-body text-ink-soft">
-                  {item.payload.name} · {item.payload.type}
-                  {item.payload.photoUrl ? " · photo included" : ""}
-                </Text>
-              ) : null}
-              {item.lastError ? (
-                <Text className="text-caption text-deny-text">{item.lastError}</Text>
-              ) : null}
-              <View className="flex-row gap-2">
-                <Button
-                  title="Retry now"
-                  variant="secondary"
-                  className="grow"
-                  loading={retryingId === item.id}
-                  disabled={retryingId !== null}
-                  onPress={() =>
-                    void retryNow(item.id).catch((error) =>
-                      Alert.alert("Retry failed", error.message),
-                    )
-                  }
-                />
-                <Button
-                  title="Discard"
-                  variant="ghost"
-                  onPress={() =>
-                    Alert.alert(
-                      "Discard queued action?",
-                      "This action will not be sent to the gate server.",
-                      [
-                        { text: "Cancel", style: "cancel" },
-                        {
-                          text: "Discard",
-                          style: "destructive",
-                          onPress: () => remove(item.id),
-                        },
-                      ],
-                    )
-                  }
-                />
-              </View>
-            </Card>
-          ))
+                {item.kind === "raise_visitor" ? (
+                  <Text className="text-body text-ink-soft">
+                    {item.payload.name} · {item.payload.type}
+                    {item.payload.photoUrl || item.payload.photoLocalUri
+                      ? " · photo included"
+                      : ""}
+                  </Text>
+                ) : null}
+                {item.lastError ? (
+                  <Text className="text-caption text-deny-text">
+                    {item.lastError}
+                  </Text>
+                ) : null}
+                <View className="flex-row gap-2">
+                  <Button
+                    title="Retry now"
+                    variant="secondary"
+                    className="grow"
+                    loading={retryingId === item.id}
+                    disabled={retryingId !== null}
+                    onPress={() =>
+                      void retryNow(item.id).catch((error) =>
+                        Alert.alert("Retry failed", error.message),
+                      )
+                    }
+                  />
+                  <Button
+                    title="Discard"
+                    variant="ghost"
+                    onPress={() =>
+                      Alert.alert(
+                        "Discard queued action?",
+                        "This action will not be sent to the gate server.",
+                        [
+                          { text: "Cancel", style: "cancel" },
+                          {
+                            text: "Discard",
+                            style: "destructive",
+                            onPress: () => remove(item.id),
+                          },
+                        ],
+                      )
+                    }
+                  />
+                </View>
+              </Card>
+            )}
+          />
         )}
-      </ScrollView>
+      </View>
     </Screen>
   );
 }

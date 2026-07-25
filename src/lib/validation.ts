@@ -208,6 +208,10 @@ export const newVisitorSchema = z.strictObject({
       "Photo reference is invalid.",
     ).optional(),
   ),
+  photoLocalUri: z.preprocess(
+    emptyToUndefined,
+    z.string().trim().max(2048).optional(),
+  ),
 });
 export type NewVisitorInput = z.infer<typeof newVisitorSchema>;
 

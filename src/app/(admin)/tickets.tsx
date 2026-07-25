@@ -20,9 +20,10 @@ import {
 } from "@/features/tickets/hooks";
 import { slaAgeLabel, slaBreached } from "@/lib/validation";
 import { useSessionStore } from "@/stores/session";
+import { FlashList } from "@shopify/flash-list";
 import { formatDistanceToNow } from "date-fns";
 import React, { useState } from "react";
-import { Alert, Pressable, ScrollView, Text, View } from "react-native";
+import { Alert, Pressable, Text, View } from "react-native";
 
 const filters: (TicketStatus | "all")[] = [
   "all",
@@ -39,45 +40,50 @@ export default function AdminTickets() {
 
   return (
     <Screen keyboard>
-      <ScrollView className="flex-1" keyboardShouldPersistTaps="handled">
-        <View className="gap-3 p-4">
-          <Text className="text-display text-ink">Complaints</Text>
+      <View className="flex-1 gap-3 p-4">
+        <Text className="text-display text-ink">Complaints</Text>
 
-          <View className="flex-row flex-wrap gap-2">
-            {filters.map((f) => (
-              <Pressable
-                key={f}
-                onPress={() => setFilter(f)}
-                className={`rounded-pill px-3 py-2 ${filter === f ? "bg-ink" : "bg-surface-alt"}`}
+        <View className="flex-row flex-wrap gap-2">
+          {filters.map((f) => (
+            <Pressable
+              key={f}
+              onPress={() => setFilter(f)}
+              className={`rounded-pill px-3 py-2 ${filter === f ? "bg-ink" : "bg-surface-alt"}`}
+            >
+              <Text
+                className={`text-caption capitalize ${filter === f ? "text-inverse" : "text-ink-soft"}`}
               >
-                <Text
-                  className={`text-caption capitalize ${filter === f ? "text-inverse" : "text-ink-soft"}`}
-                >
-                  {f.replace("_", " ")}
-                </Text>
-              </Pressable>
-            ))}
-          </View>
-
-          {tickets.isLoading ? <Skeleton /> : null}
-          {tickets.isError ? (
-            <QueryErrorState
-              error={tickets.error}
-              onRetry={() => void tickets.refetch()}
-              isRetrying={tickets.isRefetching}
-            />
-          ) : null}
-          {!tickets.isLoading && !tickets.isError && !data?.length && (
-            <EmptyState
-              title="Queue is empty"
-              hint="Resident tickets land here with category and status."
-            />
-          )}
-          {data?.map((t) => (
-            <AdminTicketCard key={t.id} ticket={t} />
+                {f === "open" ? "Raised" : f.replace("_", " ")}
+              </Text>
+            </Pressable>
           ))}
         </View>
-      </ScrollView>
+
+        {tickets.isLoading ? <Skeleton /> : null}
+        {tickets.isError ? (
+          <QueryErrorState
+            error={tickets.error}
+            onRetry={() => void tickets.refetch()}
+            isRetrying={tickets.isRefetching}
+          />
+        ) : null}
+        {!tickets.isLoading && !tickets.isError && !data?.length && (
+          <EmptyState
+            title="Queue is empty"
+            hint="Resident tickets land here with category and status."
+          />
+        )}
+        {!!data?.length && (
+          <FlashList
+            data={data}
+            keyExtractor={(t) => t.id}
+            ItemSeparatorComponent={() => <View className="h-3" />}
+            contentContainerStyle={{ paddingBottom: 24 }}
+            keyboardShouldPersistTaps="handled"
+            renderItem={({ item }) => <AdminTicketCard ticket={item} />}
+          />
+        )}
+      </View>
     </Screen>
   );
 }
@@ -108,7 +114,9 @@ function AdminTicketCard({ ticket: t }: { ticket: TicketRow }) {
         <View className="flex-row justify-between">
           <Text className="flex-1 text-title text-ink">{t.title}</Text>
           <Badge
-            label={t.status.replace("_", " ")}
+            label={
+              t.status === "open" ? "Raised" : t.status.replace("_", " ")
+            }
             tone={
               t.status === "resolved" || t.status === "closed"
                 ? "approve"

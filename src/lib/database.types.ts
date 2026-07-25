@@ -3993,6 +3993,7 @@ export type Database = {
           created_at: string
           decided_at: string | null
           decided_by: string | null
+          flat_id: string | null
           handling: string | null
           id: string
           raised_by: string
@@ -4003,6 +4004,7 @@ export type Database = {
           created_at?: string
           decided_at?: string | null
           decided_by?: string | null
+          flat_id?: string | null
           handling?: string | null
           id?: string
           raised_by: string
@@ -4013,6 +4015,7 @@ export type Database = {
           created_at?: string
           decided_at?: string | null
           decided_by?: string | null
+          flat_id?: string | null
           handling?: string | null
           id?: string
           raised_by?: string
@@ -4025,6 +4028,13 @@ export type Database = {
             columns: ["decided_by"]
             isOneToOne: false
             referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "visitor_requests_flat_id_fkey"
+            columns: ["flat_id"]
+            isOneToOne: false
+            referencedRelation: "flats"
             referencedColumns: ["id"]
           },
           {

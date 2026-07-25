@@ -103,10 +103,10 @@ Beyond the gate, the same app handles helpdesk tickets, community notices, polls
 | ----------------------- | -------------------------------------------------------- |
 | **Security-first**      | Clerk authentication + Supabase RLS on every table       |
 | **Real-time gate flow** | Live updates across guard and resident devices           |
-| **Auto-escalation**     | Unanswered visitor requests escalate automatically       |
+| **Auto-escalation**     | Unanswered requests expire + notify flat & admins (manual retry / admin override) |
 | **Offline resilience**  | Queued actions sync when connectivity returns            |
 | **Payments**            | Razorpay integration for maintenance dues                |
-| **Push notifications**  | Expo Push via Supabase Edge Functions                    |
+| **Push notifications**  | Expo Push via Supabase Edge Functions (APK / dev client; not Expo Go) |
 | **Production-ready**    | EAS Build, OTA updates, Sentry monitoring, SQL RLS tests |
 
 ---
@@ -129,7 +129,9 @@ sequenceDiagram
     S->>S: Audit log persisted
 ```
 
-**Hero flow:** Guard taps _New Visitor_ → Resident gets notified → taps _Approve_ → Guard's screen updates live → _Mark Entry_ / _Mark Exit_. If the resident does not respond in time, the request auto-escalates.
+**Hero flow:** Guard taps _New Visitor_ → Resident gets notified → taps _Approve_ (5s Undo window) → Guard's screen updates live → _Mark Entry_ / _Mark Exit_. If the resident does not respond in time, the request **expires** and flat residents + admins are notified — the guard can retry or an admin can override. This is expiry + notify, not automatic reassignment of approval.
+
+**Judge entry point:** open [`marketing/index.html`](marketing/index.html) first, then install the preview APK below.
 
 ---
 
@@ -139,11 +141,22 @@ sequenceDiagram
 
 | Resource        | Link                                                |
 | --------------- | --------------------------------------------------- |
-| **Android APK** | `<YOUR_EAS_BUILD_LINK>`                             |
-| **Demo video**  | `<YOUR_DEMO_VIDEO_URL>`                             |
-| **Screenshots** | Add images to `/screenshots` and update paths below |
+| **Android APK** | [Download preview APK](https://expo.dev/artifacts/eas/8urcvvYxmZ10OR1p2WZroojM-IeOKb3kIGZiXd0P4Rw.apk) ([build page](https://expo.dev/accounts/saurabhravte/projects/portl/builds/59e3087e-a974-4990-b32a-bf5f40ca746b)) |
+| **Demo video**  | `<YOUR_DEMO_VIDEO_URL>` — 2–5 min: gate → approve → entry/exit |
+| **Screenshots** | Add images under [`/screenshots`](screenshots/) (see that folder’s README) |
+| **Marketing**   | [`marketing/index.html`](marketing/index.html) |
+
+### Demo accounts (seeded)
+
+| Role | Email | Username | Password |
+|------|-------|----------|----------|
+| Resident | `saurabhresident@demo.com` | `saurabhresident` | `Coral7!Whistle` |
+| Guard | `saurabhguard@demo.com` | `saurabhguard` | `Coral7!Whistle` |
+| Admin | `saurabhravte.dev@gmail.com` | `saurabhravte` | `Coral7!Whistle` |
 
 > After running an EAS `preview` build, paste the download link above. Open on Android → download `.apk` → allow _Install unknown apps_ → install.
+>
+> **Expo Go note:** remote push does not work in Expo Go (SDK 53+). For the gate hero demo, use the preview APK. Notification action buttons open the app to the foreground (~1–3s cold start) before Approve/Deny can run — that latency is intentional so auth is restored.
 
 ### Screenshots
 
@@ -334,11 +347,32 @@ Native changes (permissions, libraries, SDK upgrades) always require a fresh bui
 ## Testing
 
 ```bash
-bun test                 # Jest unit + component tests
-bun run typecheck        # TypeScript
+bun test                 # Jest unit tests (pure logic; RNTL suites removed for RN 0.83)
+bun run typecheck        # TypeScript (strict)
 bun run lint             # ESLint
 bun run test:rls         # Supabase RLS policy tests
+bun run verify:demo-seed # Fail loud if demo_seed.sql is not reproducible
 ```
+
+CI should run at least `typecheck` + `test` + `lint` before calling a build production-ready.
+
+**New Architecture:** `app.config.js` sets `newArchEnabled: true` (SDK 55 default, asserted explicitly).
+
+---
+
+## Outside-the-repo checklist (required for demos)
+
+Code alone cannot ship a working judge package. Complete these **outside** the repo (or with secrets you own):
+
+1. **EAS project ID** — create/link with `eas init`, set `EAS_PROJECT_ID` in `.env` / EAS env (no `REPLACE` placeholder), rebuild. Push registration stays disabled until this is real.
+2. **Preview APK** — `bun run build:apk`, paste the download URL into Live Demo above.
+3. **Clerk demo users** — create resident / guard / admin, copy `user_…` subjects, apply `demo_seed.sql` with `-v resident_id=…` etc.
+4. **Supabase migration 0039** — `supabase db push` (or `db reset`) so `visitor_requests.flat_id`, amenity payment expiry cron, and capacity trigger exist.
+5. **Push pipeline** — deploy edge functions, set webhook secret + `pg_cron`/`pg_net` schedules for send-push / receipts; verify a device gets a live gate push.
+6. **Demo video + screenshots** — record 2–5 min gate hero; drop 6 PNGs into `/screenshots`.
+7. **Demo script** — lead with gate → approve → entry/exit only; amenities/helpdesk are secondary.
+
+Full step-by-step: [`docs/OUTSIDE_CODE_SETUP.md`](docs/OUTSIDE_CODE_SETUP.md).
 
 ---
 

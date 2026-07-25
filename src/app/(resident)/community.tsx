@@ -69,6 +69,29 @@ export default function Community() {
   return (
     <Screen className="gap-3 p-4">
       <SectionTitle>Community</SectionTitle>
+      <View className="flex-row flex-wrap gap-2">
+        {(
+          [
+            { label: "Helpdesk", href: "/(resident)/helpdesk" },
+            { label: "Amenities", tab: "amenities" as Tab },
+            { label: "Notices", tab: "notices" as Tab },
+            { label: "Directory", tab: "staff" as Tab },
+          ] as const
+        ).map((item) => (
+          <Chip
+            key={item.label}
+            label={item.label}
+            selected={"tab" in item ? tab === item.tab : false}
+            onPress={() => {
+              if ("href" in item) {
+                router.push(item.href as any);
+                return;
+              }
+              selectTab(item.tab);
+            }}
+          />
+        ))}
+      </View>
       <ScrollView
         horizontal
         showsHorizontalScrollIndicator={false}

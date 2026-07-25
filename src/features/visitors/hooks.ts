@@ -2,6 +2,7 @@ import { usePrefs } from "@/lib/i18n";
 import {
   isOnlineNow,
   newQueueId,
+  useIsOnline,
   useOfflineQueue,
 } from "@/lib/offline";
 import {
@@ -11,6 +12,7 @@ import {
 } from "@/lib/offlineQueue";
 import { queryKeys } from "@/lib/queryState";
 import { useRealtimeRefreshPolicy } from "@/lib/realtimeHealth";
+import { realtimeFallbackInterval } from "@/lib/realtimePolicy";
 import { gateBreadcrumb } from "@/lib/sentry";
 import { useSupabase } from "@/lib/supabase";
 import {
@@ -29,6 +31,7 @@ import {
   visitorIdSchema,
 } from "@/lib/validation";
 import { useSessionStore } from "@/stores/session";
+import { toast } from "@/stores/toast";
 import {
   useInfiniteQuery,
   useMutation,
@@ -37,6 +40,7 @@ import {
 } from "@tanstack/react-query";
 import * as Haptics from "expo-haptics";
 import { useCallback, useEffect, useState } from "react";
+import { waitForDecideUndo } from "./decideUndo";
 
 export type VisitorType = "guest" | "delivery" | "cab" | "service";
 export type RequestStatus = "pending" | "approved" | "denied" | "expired";
@@ -128,14 +132,19 @@ export function useFlatApprovals() {
     },
   });
 
-  // Realtime: any change to visitor_requests refreshes the card list.
+  // Filtered realtime: only this flat's rows (requires visitor_requests.flat_id).
   useEffect(() => {
     if (!flatId) return;
     const channel = supabase
       .channel(`flat-approvals-${flatId}`)
       .on(
         "postgres_changes",
-        { event: "*", schema: "public", table: "visitor_requests" },
+        {
+          event: "*",
+          schema: "public",
+          table: "visitor_requests",
+          filter: `flat_id=eq.${flatId}`,
+        },
         () => qc.invalidateQueries({ queryKey: queryKeys.approvals(flatId) }),
       )
       .subscribe((status) => setRealtimeHealthy(status === "SUBSCRIBED"));
@@ -150,10 +159,37 @@ export function useFlatApprovals() {
 /** One request with visitor details — the full-screen approval view. */
 export function useVisitorRequest(requestId: string | undefined) {
   const supabase = useSupabase();
+  const online = useIsOnline();
+  const [realtimeHealthy, setRealtimeHealthy] = useState(false);
+  const qc = useQueryClient();
+
+  useEffect(() => {
+    if (!requestId) return;
+    const channel = supabase
+      .channel(`visitor-request-${requestId}`)
+      .on(
+        "postgres_changes",
+        {
+          event: "*",
+          schema: "public",
+          table: "visitor_requests",
+          filter: `id=eq.${requestId}`,
+        },
+        () =>
+          qc.invalidateQueries({
+            queryKey: queryKeys.visitorRequest(requestId),
+          }),
+      )
+      .subscribe((status) => setRealtimeHealthy(status === "SUBSCRIBED"));
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [supabase, requestId, qc]);
+
   return useQuery({
     queryKey: queryKeys.visitorRequest(requestId),
     enabled: !!requestId,
-    refetchInterval: 5_000, // status can flip via realtime elsewhere; keep fresh
+    refetchInterval: realtimeFallbackInterval(realtimeHealthy, online),
     queryFn: async () => {
       const { data, error } = await supabase
         .from("visitor_requests")
@@ -176,7 +212,7 @@ export function useVisitorRequest(requestId: string | undefined) {
   });
 }
 
-/** Approve / deny with optimistic UI + haptics. */
+/** Approve / deny with optimistic UI + 5s undo window before the RPC fires. */
 export function useDecide() {
   const supabase = useSupabase();
   const qc = useQueryClient();
@@ -194,6 +230,15 @@ export function useDecide() {
         requestId,
         decision,
       }));
+
+      const undone = await waitForDecideUndo(requestId, decision);
+      if (undone) {
+        // Throw so call-site onSuccess (e.g. navigate away) does not run.
+        const err = new Error("Decision cancelled");
+        err.name = "DecideUndone";
+        throw err;
+      }
+
       const idempotencyKey = newQueueId();
       const queuedAction: NewQueuedGateAction = {
         kind: "decide_request",
@@ -203,7 +248,7 @@ export function useDecide() {
       };
       if (!(await isOnlineNow())) {
         enqueueGateAction(queuedAction, idempotencyKey);
-        return { queued: true };
+        return { queued: true as const };
       }
       gateBreadcrumb("resident decision", { requestId, decision });
       const { data, error } = await supabase.rpc("decide_visitor_request", {
@@ -213,24 +258,44 @@ export function useDecide() {
       });
       if (error) {
         if (enqueueAmbiguousFailure(queuedAction, idempotencyKey, error)) {
-          return { queued: true };
+          return { queued: true as const };
         }
         throw error;
       }
       if (!privilegedRpcResultSchema.safeParse(data).success) {
         throw new Error("This request was already handled or is no longer available.");
       }
+      return { committed: true as const };
     },
     onMutate: async ({ requestId }) => {
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
       await qc.cancelQueries({ queryKey: ["approvals"] });
+      const previous = qc.getQueriesData<VisitorRequestRow[]>({
+        queryKey: ["approvals"],
+      });
       qc.setQueriesData(
         { queryKey: ["approvals"] },
         (old: VisitorRequestRow[] | undefined) =>
           old?.filter((r) => r.id !== requestId),
       );
+      return { previous };
     },
-    onSettled: (_d, _e, { requestId }) => {
+    onSuccess: () => {
+      /* committed or queued — settled invalidates */
+    },
+    onError: (error, _v, ctx) => {
+      if (ctx?.previous) {
+        for (const [key, data] of ctx.previous) {
+          if (data !== undefined) qc.setQueryData(key, data);
+        }
+      }
+      if (error instanceof Error && error.name === "DecideUndone") {
+        toast.info("Decision cancelled");
+        return;
+      }
+    },
+    onSettled: (_d, error, { requestId }) => {
+      if (error instanceof Error && error.name === "DecideUndone") return;
       qc.invalidateQueries({ queryKey: ["approvals"] });
       qc.invalidateQueries({ queryKey: queryKeys.visitorRequest(requestId) });
     },
@@ -263,6 +328,7 @@ export function useRaiseRequest() {
       type: VisitorType;
       flatId: string;
       photoUrl?: string;
+      photoLocalUri?: string;
     }): Promise<RaiseResult> => {
       const parsed = parseInput(newVisitorSchema, input);
       const idempotencyKey = newQueueId();
@@ -286,6 +352,7 @@ export function useRaiseRequest() {
                 phone: parsed.phone || undefined,
                 vehicleNo: parsed.vehicleNo || undefined,
                 photoUrl: parsed.photoUrl || undefined,
+                photoLocalUri: parsed.photoLocalUri || undefined,
               },
             },
             idempotencyKey,
@@ -319,6 +386,7 @@ export function useRaiseRequest() {
                 phone: parsed.phone || undefined,
                 vehicleNo: parsed.vehicleNo || undefined,
                 photoUrl: parsed.photoUrl || undefined,
+                photoLocalUri: parsed.photoLocalUri || undefined,
               },
             },
             idempotencyKey,

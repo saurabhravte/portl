@@ -32,15 +32,36 @@ export function Toaster() {
       {items.map((t) => {
         const s = toneStyle[t.tone];
         return (
-          <Pressable
+          <View
             key={t.id}
-            onPress={() => dismiss(t.id)}
             accessibilityRole="alert"
             className={`w-full max-w-md flex-row items-center gap-3 rounded-md border px-4 py-3 ${s.wrap}`}
           >
             <AppIcon name={s.icon} size={20} color={s.iconColor(colors)} />
-            <Text className="flex-1 text-label text-ink">{t.message}</Text>
-          </Pressable>
+            <Pressable
+              onPress={() => dismiss(t.id)}
+              className="flex-1"
+              accessibilityRole="button"
+              accessibilityLabel="Dismiss notification"
+            >
+              <Text className="text-label text-ink">{t.message}</Text>
+            </Pressable>
+            {t.actionLabel && t.onAction ? (
+              <Pressable
+                onPress={() => {
+                  t.onAction?.();
+                  dismiss(t.id);
+                }}
+                accessibilityRole="button"
+                accessibilityLabel={t.actionLabel}
+                hitSlop={8}
+              >
+                <Text className="text-label font-semibold text-primary-text">
+                  {t.actionLabel}
+                </Text>
+              </Pressable>
+            ) : null}
+          </View>
         );
       })}
     </View>

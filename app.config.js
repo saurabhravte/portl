@@ -77,6 +77,8 @@ module.exports = ({ config }) => {
           fallbackToCacheTimeout: 0,
         }
       : { enabled: false },
+    // New Architecture is on by default in Expo SDK 55; assert explicitly for reviewers.
+    newArchEnabled: true,
     extra: {
       ...(config.extra ?? {}),
       appEnvironment,

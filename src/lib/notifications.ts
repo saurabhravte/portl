@@ -69,11 +69,14 @@ export async function configureNotifications() {
       buttonTitle: "Approve",
       // Restore the authenticated session before performing this privileged
       // mutation; no unauthenticated headless task is allowed to decide.
+      // Trade-off: "zero tap" still cold-starts the app (opensAppToForeground).
+      // Expect ~1–3s latency on a killed process before the RPC can run.
       options: { opensAppToForeground: true },
     },
     {
       identifier: ACTION_DENY,
       buttonTitle: "Deny",
+      // Same foreground requirement as Approve — see comment above.
       options: { opensAppToForeground: true, isDestructive: true },
     },
   ]);

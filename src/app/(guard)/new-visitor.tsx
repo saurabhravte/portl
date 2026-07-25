@@ -19,7 +19,7 @@ import {
 } from "@/features/visitors/hooks";
 import { useT } from "@/lib/i18n";
 import { isOnlineNow } from "@/lib/offline";
-import { pickAndUploadPhoto } from "@/lib/photos";
+import { pickAndCompressImage, pickAndUploadPhoto } from "@/lib/photos";
 import { reportMutationError } from "@/lib/queryState";
 import { useSupabase } from "@/lib/supabase";
 import { useRouter } from "expo-router";
@@ -67,9 +67,11 @@ export default function NewVisitor() {
   const [phone, setPhone] = useState("");
   const [vehicleNo, setVehicleNo] = useState("");
   const [photoUrl, setPhotoUrl] = useState<string | null>(null);
+  const [photoLocalUri, setPhotoLocalUri] = useState<string | null>(null);
   const [uploading, setUploading] = useState(false);
   const [flatTerm, setFlatTerm] = useState("");
   const [flat, setFlat] = useState<{ id: string; number: string } | null>(null);
+  const [showMore, setShowMore] = useState(false);
   const flats = useFlatSearch(flatTerm);
   const residents = useResidentSearch(flatTerm);
   const recent = useRecentVisitorSearch(name);
@@ -82,7 +84,6 @@ export default function NewVisitor() {
   const willAutoApprove =
     !!flat && autoTypes.has(vtype) && !flatOptOut.has(vtype);
 
-  // Smart gate helpers (#7 insights, #23 plate lookup, #17 recurring match).
   const insights = useVisitorInsights(phone);
   const insightLine = describeInsights(insights.data);
   const lookup = useLookupVehicle();
@@ -138,17 +139,25 @@ export default function NewVisitor() {
   };
 
   const onPhoto = async () => {
-    if (!(await isOnlineNow())) {
-      Alert.alert(
-        "Photo unavailable offline",
-        "Visitor photos must be uploaded before going offline. You can still queue this request without a photo.",
-      );
-      return;
-    }
     setUploading(true);
     try {
+      if (!(await isOnlineNow())) {
+        const asset = await pickAndCompressImage();
+        if (asset) {
+          setPhotoLocalUri(asset.uri);
+          setPhotoUrl(null);
+          Alert.alert(
+            "Photo saved offline",
+            "It will upload when you reconnect, then attach to this visitor.",
+          );
+        }
+        return;
+      }
       const url = await pickAndUploadPhoto(supabase, "visitors");
-      if (url) setPhotoUrl(url);
+      if (url) {
+        setPhotoUrl(url);
+        setPhotoLocalUri(null);
+      }
     } finally {
       setUploading(false);
     }
@@ -182,6 +191,7 @@ export default function NewVisitor() {
         type: vtype,
         flatId: flat.id,
         photoUrl: photoUrl ?? undefined,
+        photoLocalUri: photoLocalUri ?? undefined,
       },
       {
         onSuccess: (result) => {
@@ -189,6 +199,7 @@ export default function NewVisitor() {
           setPhone("");
           setVehicleNo("");
           setPhotoUrl(null);
+          setPhotoLocalUri(null);
           setFlat(null);
           setFlatTerm("");
           setWatchHit(null);
@@ -221,6 +232,9 @@ export default function NewVisitor() {
         keyboardShouldPersistTaps="handled"
       >
         <Text className="text-display text-ink">{t("new_visitor")}</Text>
+        <Text className="text-caption text-ink-muted">
+          Fast path: type → name → flat → submit
+        </Text>
 
         <View className="flex-row flex-wrap gap-2">
           {types.map((ty) => (
@@ -293,108 +307,6 @@ export default function NewVisitor() {
         )}
 
         <Field
-          label={t("phone_optional")}
-          value={phone}
-          onChangeText={(v) => {
-            setPhone(v);
-            setWatchHit(null);
-          }}
-          keyboardType="phone-pad"
-        />
-        {insightLine ? (
-          <Card className="flex-row items-center justify-between p-3">
-            <View className="flex-1">
-              <Text className="text-caption text-ink-soft">Seen before</Text>
-              <Text className="text-body text-ink">{insightLine}</Text>
-            </View>
-            {insights.data?.known ? <Badge label="Known" tone="approve" /> : null}
-          </Card>
-        ) : null}
-        <Field
-          label={t("vehicle_optional")}
-          value={vehicleNo}
-          onChangeText={(v) => {
-            setVehicleNo(v);
-            setVehicleHit(null);
-            setWatchHit(null);
-          }}
-          autoCapitalize="characters"
-          placeholder="MP09 AB 1234"
-        />
-        <View className="flex-row flex-wrap gap-2">
-          {vehicleNo.trim().length >= 3 ? (
-            <Button
-              title="Check plate"
-              variant="ghost"
-              size="sm"
-              loading={lookup.isPending}
-              onPress={onCheckPlate}
-            />
-          ) : null}
-          {name.trim() || phone.trim() || vehicleNo.trim().length >= 3 ? (
-            <Button
-              title="Check watchlist"
-              variant="ghost"
-              size="sm"
-              loading={watchlistLookup.isPending}
-              onPress={onCheckWatchlist}
-            />
-          ) : null}
-        </View>
-        {watchHit?.matches.length ? (
-          <Card className="p-3">
-            {watchHit.matches.map((match) => (
-              <View key={match.id} className="mb-2 gap-1">
-                <View className="flex-row items-center justify-between">
-                  <Text className="text-body text-ink">
-                    {match.name ?? match.phone ?? match.vehicle_no ?? "Match"}
-                  </Text>
-                  <Badge
-                    label={match.kind}
-                    tone={match.kind === "blacklist" ? "deny" : "neutral"}
-                  />
-                </View>
-                <Text className="text-caption text-ink-muted">{match.reason}</Text>
-              </View>
-            ))}
-          </Card>
-        ) : null}
-        {vehicleHit ? (
-          <Card className="p-3">
-            <View className="flex-row items-center justify-between">
-              <Text className="text-body text-ink">
-                {vehicleHit.label ?? "Registered"} · Flat {vehicleHit.flat_number}
-              </Text>
-              {vehicleHit.auto_approve ? <Badge label="Auto-approve" tone="approve" /> : null}
-            </View>
-            {vehicleHit.flat_number ? (
-              <Button
-                title={`Find flat ${vehicleHit.flat_number}`}
-                size="sm"
-                variant="secondary"
-                onPress={() => {
-                  setFlat(null);
-                  setFlatTerm(vehicleHit.flat_number ?? "");
-                }}
-              />
-            ) : null}
-          </Card>
-        ) : null}
-        <Button
-          title={photoUrl ? t("change_photo") : t("add_photo")}
-          variant="secondary"
-          size="guard"
-          loading={uploading}
-          onPress={onPhoto}
-        />
-        {photoUrl ? (
-          <PrivateMediaImage
-            reference={photoUrl}
-            style={{ width: "100%", height: 160, borderRadius: 12 }}
-            contentFit="cover"
-          />
-        ) : null}
-        <Field
           label={t("flat")}
           value={flat ? flat.number : flatTerm}
           onChangeText={(v) => {
@@ -455,28 +367,153 @@ export default function NewVisitor() {
             }}
           />
         ) : null}
-        {flat && name.trim().length >= 1 ? (
-          recurringHit ? (
-            <Card className="flex-row items-center justify-between p-3">
-              <Text className="text-body text-ink">Matches a recurring pass</Text>
-              <Badge label="Expected now" tone="approve" />
-            </Card>
-          ) : (
-            <Button
-              title="Check recurring pass"
-              variant="ghost"
-              size="sm"
-              loading={recurringMatch.isPending}
-              onPress={onCheckRecurring}
-            />
-          )
-        ) : null}
+
         <Button
           title={willAutoApprove ? t("auto_submit") : t("ask_resident")}
           size="guard"
           onPress={onRaise}
           loading={raise.isPending}
         />
+
+        <Pressable
+          accessibilityRole="button"
+          accessibilityLabel={showMore ? "Hide more options" : "Show more options"}
+          onPress={() => setShowMore((v) => !v)}
+          className="py-2"
+        >
+          <Text className="text-label text-primary-text">
+            {showMore ? "Hide extras ▲" : "More (photo, plate, watchlist) ▼"}
+          </Text>
+        </Pressable>
+
+        {showMore ? (
+          <>
+            <Field
+              label={t("phone_optional")}
+              value={phone}
+              onChangeText={(v) => {
+                setPhone(v);
+                setWatchHit(null);
+              }}
+              keyboardType="phone-pad"
+            />
+            {insightLine ? (
+              <Card className="flex-row items-center justify-between p-3">
+                <View className="flex-1">
+                  <Text className="text-caption text-ink-soft">Seen before</Text>
+                  <Text className="text-body text-ink">{insightLine}</Text>
+                </View>
+                {insights.data?.known ? <Badge label="Known" tone="approve" /> : null}
+              </Card>
+            ) : null}
+            <Field
+              label={t("vehicle_optional")}
+              value={vehicleNo}
+              onChangeText={(v) => {
+                setVehicleNo(v);
+                setVehicleHit(null);
+                setWatchHit(null);
+              }}
+              autoCapitalize="characters"
+              placeholder="MP09 AB 1234"
+            />
+            <View className="flex-row flex-wrap gap-2">
+              {vehicleNo.trim().length >= 3 ? (
+                <Button
+                  title="Check plate"
+                  variant="ghost"
+                  size="sm"
+                  loading={lookup.isPending}
+                  onPress={onCheckPlate}
+                />
+              ) : null}
+              {name.trim() || phone.trim() || vehicleNo.trim().length >= 3 ? (
+                <Button
+                  title="Check watchlist"
+                  variant="ghost"
+                  size="sm"
+                  loading={watchlistLookup.isPending}
+                  onPress={onCheckWatchlist}
+                />
+              ) : null}
+            </View>
+            {watchHit?.matches.length ? (
+              <Card className="p-3">
+                {watchHit.matches.map((match) => (
+                  <View key={match.id} className="mb-2 gap-1">
+                    <View className="flex-row items-center justify-between">
+                      <Text className="text-body text-ink">
+                        {match.name ?? match.phone ?? match.vehicle_no ?? "Match"}
+                      </Text>
+                      <Badge
+                        label={match.kind}
+                        tone={match.kind === "blacklist" ? "deny" : "neutral"}
+                      />
+                    </View>
+                    <Text className="text-caption text-ink-muted">{match.reason}</Text>
+                  </View>
+                ))}
+              </Card>
+            ) : null}
+            {vehicleHit ? (
+              <Card className="p-3">
+                <View className="flex-row items-center justify-between">
+                  <Text className="text-body text-ink">
+                    {vehicleHit.label ?? "Registered"} · Flat {vehicleHit.flat_number}
+                  </Text>
+                  {vehicleHit.auto_approve ? <Badge label="Auto-approve" tone="approve" /> : null}
+                </View>
+                {vehicleHit.flat_number ? (
+                  <Button
+                    title={`Find flat ${vehicleHit.flat_number}`}
+                    size="sm"
+                    variant="secondary"
+                    onPress={() => {
+                      setFlat(null);
+                      setFlatTerm(vehicleHit.flat_number ?? "");
+                    }}
+                  />
+                ) : null}
+              </Card>
+            ) : null}
+            <Button
+              title={
+                photoUrl || photoLocalUri ? t("change_photo") : t("add_photo")
+              }
+              variant="secondary"
+              size="guard"
+              loading={uploading}
+              onPress={onPhoto}
+            />
+            {photoUrl ? (
+              <PrivateMediaImage
+                reference={photoUrl}
+                style={{ width: "100%", height: 160, borderRadius: 12 }}
+                contentFit="cover"
+              />
+            ) : photoLocalUri ? (
+              <Text className="text-caption text-ink-muted">
+                Offline photo ready — uploads on reconnect
+              </Text>
+            ) : null}
+            {flat && name.trim().length >= 1 ? (
+              recurringHit ? (
+                <Card className="flex-row items-center justify-between p-3">
+                  <Text className="text-body text-ink">Matches a recurring pass</Text>
+                  <Badge label="Expected now" tone="approve" />
+                </Card>
+              ) : (
+                <Button
+                  title="Check recurring pass"
+                  variant="ghost"
+                  size="sm"
+                  loading={recurringMatch.isPending}
+                  onPress={onCheckRecurring}
+                />
+              )
+            ) : null}
+          </>
+        ) : null}
       </ScrollView>
       </KeyboardAvoidingView>
     </Screen>

@@ -132,9 +132,11 @@ export default function Helpdesk() {
                     label={
                       f === "all"
                         ? "All"
-                        : f === "in_progress"
-                          ? "In Progress"
-                          : f[0].toUpperCase() + f.slice(1)
+                        : f === "open"
+                          ? "Raised"
+                          : f === "in_progress"
+                            ? "In Progress"
+                            : f[0].toUpperCase() + f.slice(1)
                     }
                     selected={statusFilter === f}
                     onPress={() => setStatusFilter(f)}
@@ -243,9 +245,11 @@ function TicketCard({ ticket: t }: { ticket: TicketRow }) {
           <Text className="flex-1 text-title text-ink">{t.title}</Text>
           <Badge
             label={
-              t.status === "in_progress"
-                ? "In Progress"
-                : t.status[0].toUpperCase() + t.status.slice(1).replace("_", " ")
+              t.status === "open"
+                ? "Raised"
+                : t.status === "in_progress"
+                  ? "In Progress"
+                  : t.status[0].toUpperCase() + t.status.slice(1).replace("_", " ")
             }
             tone={statusTone(t.status)}
           />

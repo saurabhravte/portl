@@ -23,6 +23,7 @@ import {
   type QueueScope,
 } from "./offlineQueue";
 import { captureError, gateBreadcrumb } from "./sentry";
+import { uploadPhotoAsset } from "./photos";
 import type { AppSupabaseClient } from "./supabase";
 import {
   adminOverrideResultSchema,
@@ -155,6 +156,21 @@ export async function flushGateQueue(supabase: AppSupabaseClient) {
       if (item.status === "dead") continue;
       try {
         if (item.kind === "raise_visitor") {
+          let photoUrl = item.payload.photoUrl;
+          if (!photoUrl && item.payload.photoLocalUri) {
+            const uploaded = await uploadPhotoAsset(
+              supabase,
+              "visitors",
+              {
+                uri: item.payload.photoLocalUri,
+                contentType: "image/jpeg",
+              },
+            );
+            if (!uploaded) {
+              throw new Error("Could not upload offline visitor photo.");
+            }
+            photoUrl = uploaded;
+          }
           const { data, error } = await supabase.rpc("raise_visitor_request", {
             p_idempotency_key: item.idempotencyKey,
             p_flat_id: item.payload.flatId,
@@ -162,7 +178,7 @@ export async function flushGateQueue(supabase: AppSupabaseClient) {
             p_type: item.payload.type,
             p_phone: item.payload.phone ?? undefined,
             p_vehicle_no: item.payload.vehicleNo ?? undefined,
-            p_photo_url: item.payload.photoUrl ?? undefined,
+            p_photo_url: photoUrl ?? undefined,
           });
           if (error) throw error;
           parseInput(raiseVisitorResultSchema, data);
