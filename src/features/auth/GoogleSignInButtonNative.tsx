@@ -15,6 +15,7 @@ type Props = {
   onComplete?: () => void;
   label?: string;
   disabled?: boolean;
+  layout?: "default" | "compact";
 };
 
 /**
@@ -25,6 +26,7 @@ export function GoogleSignInButtonNative({
   onComplete,
   label = "Continue with Google",
   disabled,
+  layout = "default",
 }: Props) {
   const { startGoogleAuthenticationFlow } = useSignInWithGoogle();
   const router = useRouter();
@@ -73,22 +75,31 @@ export function GoogleSignInButtonNative({
     }
   };
 
+  const compact = layout === "compact";
+
   return (
     <Pressable
       accessibilityRole="button"
       accessibilityLabel={label}
       disabled={disabled || busy}
       onPress={() => void onPress()}
-      className={`min-h-11 flex-row items-center justify-center gap-2 rounded-md border border-border bg-surface px-4 py-3 ${
-        disabled || busy ? "opacity-50" : "active:opacity-80"
-      }`}
+      className={`flex-row items-center justify-center gap-2 ${
+        compact
+          ? "min-h-12 flex-1 rounded-xl bg-surface-alt px-3"
+          : "min-h-11 rounded-md border border-border bg-surface px-4 py-3"
+      } ${disabled || busy ? "opacity-50" : "active:opacity-80"}`}
     >
       {busy ? (
         <ActivityIndicator color={colors.primary} />
       ) : (
         <>
           <AppIcon name="google" size={20} color={colors.ink} />
-          <Text className="text-label text-ink">{label}</Text>
+          <Text
+            className={`font-semibold text-ink ${compact ? "text-caption" : "text-label"}`}
+            numberOfLines={1}
+          >
+            {label}
+          </Text>
         </>
       )}
     </Pressable>

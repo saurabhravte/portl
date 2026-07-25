@@ -11,6 +11,7 @@ type Props = {
   onComplete?: () => void;
   label?: string;
   disabled?: boolean;
+  layout?: "default" | "compact";
 };
 
 /**

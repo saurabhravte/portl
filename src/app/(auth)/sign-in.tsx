@@ -1,10 +1,12 @@
-import { BrandMark } from "@/components/BrandMark";
 import { Button, Field, Screen } from "@/components/ui";
 import {
-  AuthFooterLegal,
   AuthOrDivider,
+  AuthPrimaryButton,
+  AuthScreenTopBar,
+  AuthSocialRow,
 } from "@/features/auth/AuthChrome";
-import { GoogleSignInButton, GoogleSignInExpoGoHint } from "@/features/auth/GoogleSignInButton";
+import { AuthMethodPicker } from "@/features/auth/AuthMethodPicker";
+import { GoogleSignInExpoGoHint } from "@/features/auth/GoogleSignInButton";
 import { clerkErrorMessage } from "@/features/auth/identity";
 import { useZodForm } from "@/lib/useZodForm";
 import {
@@ -26,6 +28,8 @@ import {
 } from "react-native";
 
 type Stage = "form" | "client-trust";
+
+const authFieldClassName = "min-h-12 rounded-xl border-0 bg-surface-alt px-4";
 
 export default function SignIn() {
   const { signIn } = useSignIn();
@@ -143,25 +147,18 @@ export default function SignIn() {
   };
 
   return (
-    <Screen>
+    <Screen edges={["top", "bottom"]}>
       <KeyboardAvoidingView
         className="flex-1"
         behavior={Platform.OS === "ios" ? "padding" : undefined}
       >
         <ScrollView
-          contentContainerClassName="grow justify-center gap-4 p-6"
+          contentContainerClassName="grow p-6 pb-8"
           keyboardShouldPersistTaps="handled"
         >
-          <BrandMark
-            size="lg"
-            showWordmark
-            subtitle={
-              stage === "client-trust"
-                ? "Enter the code we sent you."
-                : "Stay signed in — open Portl anytime."
-            }
-          />
-          <Text className="text-center text-title text-ink">
+          <AuthScreenTopBar />
+
+          <Text className="mb-6 text-display text-ink">
             {stage === "client-trust" ? "Verify it's you" : "Login Account"}
           </Text>
 
@@ -176,8 +173,9 @@ export default function SignIn() {
                 textContentType="oneTimeCode"
                 maxLength={6}
                 autoFocus
+                className={authFieldClassName}
               />
-              <Button
+              <AuthPrimaryButton
                 title="Verify and sign in"
                 onPress={() => void verifyCode()}
                 loading={busy}
@@ -198,55 +196,74 @@ export default function SignIn() {
             </View>
           ) : (
             <>
-              <Field
-                label="Email or username"
-                value={form.values.identifier}
-                onChangeText={form.setField("identifier")}
-                onBlur={form.blur("identifier")}
-                error={form.errors.identifier}
-                autoCapitalize="none"
-                autoComplete="username"
-                textContentType="username"
-                placeholder="you@example.com or yourname"
+              <AuthMethodPicker
+                value="email"
+                onChange={() => {}}
+                variant="underline"
+                disabledMethods={["phone"]}
+                disabled={busy}
               />
-              <Field
-                label="Password"
-                value={form.values.password}
-                onChangeText={form.setField("password")}
-                onBlur={form.blur("password")}
-                error={form.errors.password}
-                secureTextEntry
-                secureToggle
-                autoComplete="current-password"
-                textContentType="password"
-                placeholder="••••••••"
-              />
-              <Button title="Sign in" onPress={onSignIn} loading={busy} />
-              <Link href={"/(auth)/forgot-password" as any} asChild>
-                <Pressable
-                  accessibilityRole="link"
-                  className="min-h-11 justify-center"
-                >
-                  <Text className="text-center text-label text-ink">
-                    Forgotten your password?{" "}
-                    <Text className="text-primary-text">Reset Password</Text>
-                  </Text>
-                </Pressable>
-              </Link>
 
-              <AuthOrDivider label="Or sign in with" />
-              <GoogleSignInButton disabled={busy} />
-              <GoogleSignInExpoGoHint />
+              <View className="mt-6 gap-5">
+                <Field
+                  label="Email or username"
+                  value={form.values.identifier}
+                  onChangeText={form.setField("identifier")}
+                  onBlur={form.blur("identifier")}
+                  error={form.errors.identifier}
+                  autoCapitalize="none"
+                  autoComplete="username"
+                  textContentType="username"
+                  placeholder="you@example.com or yourname"
+                  className={authFieldClassName}
+                />
+                <Field
+                  label="Password"
+                  value={form.values.password}
+                  onChangeText={form.setField("password")}
+                  onBlur={form.blur("password")}
+                  error={form.errors.password}
+                  secureTextEntry
+                  secureToggle
+                  autoComplete="current-password"
+                  textContentType="password"
+                  placeholder="••••••••"
+                  className={authFieldClassName}
+                />
+              </View>
 
-              <AuthFooterLegal />
+              <View className="mt-6 gap-5">
+                <AuthPrimaryButton
+                  title="Sign in"
+                  onPress={onSignIn}
+                  loading={busy}
+                />
+
+                <Link href={"/(auth)/forgot-password" as any} asChild>
+                  <Pressable
+                    accessibilityRole="link"
+                    className="min-h-11 justify-center"
+                  >
+                    <Text className="text-center text-label text-ink">
+                      Forgotten your password?{" "}
+                      <Text className="font-semibold text-ink">Reset Password</Text>
+                    </Text>
+                  </Pressable>
+                </Link>
+
+                <AuthOrDivider label="Or sign in with" />
+                <AuthSocialRow disabled={busy} />
+                <GoogleSignInExpoGoHint />
+              </View>
+
               <Link href={"/(auth)/sign-up" as any} asChild>
                 <Pressable
                   accessibilityRole="link"
-                  className="min-h-11 justify-center"
+                  className="mt-8 min-h-11 justify-center"
                 >
                   <Text className="text-center text-label text-ink">
                     I don't have an account,{" "}
-                    <Text className="text-primary-text">Sign up</Text>
+                    <Text className="font-semibold text-ink">Sign up</Text>
                   </Text>
                 </Pressable>
               </Link>
