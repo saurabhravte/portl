@@ -17,7 +17,12 @@ module.exports = ({ config }) => {
   assertReleaseConfiguration(process.env);
 
   const release = isReleaseConfiguration(process.env);
-  const projectId = process.env.EAS_PROJECT_ID?.trim();
+  // Prefer env; fall back to app.json extra.eas.projectId. Never set
+  // eas: undefined — that wipes the app.json value and breaks EAS/push.
+  const projectId =
+    process.env.EAS_PROJECT_ID?.trim() ||
+    config.extra?.eas?.projectId ||
+    undefined;
   const sentryOrg = process.env.SENTRY_ORG?.trim();
   const sentryProject = process.env.SENTRY_PROJECT?.trim();
   const appEnvironment = process.env.APP_ENV?.trim() || "development";
@@ -35,6 +40,8 @@ module.exports = ({ config }) => {
     name: process.env.EXPO_APP_NAME?.trim() || config.name,
     version: process.env.APP_VERSION?.trim() || config.version,
     owner: process.env.EXPO_OWNER?.trim() || config.owner,
+    // New Architecture is on by default in Expo SDK 55; assert explicitly for reviewers.
+    newArchEnabled: true,
 
     ios: {
       ...config.ios,
@@ -63,7 +70,7 @@ module.exports = ({ config }) => {
     extra: {
       ...(config.extra ?? {}),
       appEnvironment,
-      eas: projectId ? { projectId } : undefined,
+      ...(projectId ? { eas: { projectId } } : {}),
       // Clerk Google Sign-In reads these from app config in production bundles.
       EXPO_PUBLIC_CLERK_GOOGLE_WEB_CLIENT_ID:
         process.env.EXPO_PUBLIC_CLERK_GOOGLE_WEB_CLIENT_ID?.trim() || undefined,
