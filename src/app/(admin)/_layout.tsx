@@ -79,6 +79,7 @@ export default function AdminTabs() {
         />
         <Tabs.Screen name="history" options={{ href: null }} />
         <Tabs.Screen name="inbox" options={{ href: null }} />
+        <Tabs.Screen name="notice-editor" options={{ href: null }} />
       </Tabs>
     </RoleGuard>
   );

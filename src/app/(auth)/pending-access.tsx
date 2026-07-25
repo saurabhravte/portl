@@ -1,31 +1,17 @@
 import { Button, Screen } from "@/components/ui";
 import { ContactDetailsSection } from "@/features/auth/ContactDetailsSection";
-import { claimReasonCopy } from "@/features/auth/inviteClaim";
+import { AUTH } from "@/lib/copy";
 import { signOutFromPortl } from "@/lib/signOut";
 import { useSupabase } from "@/lib/supabase";
 import { useSessionStore } from "@/stores/session";
 import { useClerk } from "@clerk/expo";
 import { useRouter } from "expo-router";
-import React from "react";
+import React, { useState } from "react";
 import { Alert, ScrollView, Text, View } from "react-native";
 
 /**
  * Lobby for a signed-in user who is not attached to a society yet.
- *
- * WHY THIS SCREEN CAN NOW ACTUALLY BE SEEN
- *   `resolveSessionRoute()` has always routed `pendingVerification` and
- *   `unlinked` here, but `RoleGate` returned a blocking screen for any status
- *   other than "linked" — before `children` (the <Stack>) rendered. The
- *   navigation resolved into an unmounted tree, so this screen never
- *   appeared and the user was stuck on "Couldn't load your profile". The gate
- *   now only blocks on `loading` and `failed`. See src/app/_layout.tsx.
- *
- * WHY IT IS NOT A DEAD END
- *   `profiles.society_id` is NOT NULL, so a user with no society genuinely
- *   cannot have a profile row and cannot be shown the resident home. What we
- *   can guarantee is that they are never stranded: this screen states the
- *   situation in plain language and gives them the one action that resolves
- *   it, using the same ContactDetailsSection that lives in Profile.
+ * Verification is optional and user-initiated — never forced open.
  */
 export default function PendingAccess() {
   const { signOut } = useClerk();
@@ -33,11 +19,9 @@ export default function PendingAccess() {
   const router = useRouter();
   const profileStatus = useSessionStore((s) => s.profileStatus);
   const retryProfile = useSessionStore((s) => s.retryProfile);
+  const [showVerify, setShowVerify] = useState(false);
 
   const needsVerification = profileStatus === "pendingVerification";
-  const copy = claimReasonCopy(
-    needsVerification ? "identity_unverified" : "no_invite",
-  );
 
   const onSignOut = async () => {
     try {
@@ -51,6 +35,21 @@ export default function PendingAccess() {
     }
   };
 
+  const onVerifyLater = () => {
+    Alert.alert(
+      AUTH.verifyLater,
+      "You can verify anytime from Profile after you sign back in. Without a verified contact your society can't match an invite yet.",
+      [
+        { text: "Stay here", style: "cancel" },
+        {
+          text: AUTH.signOut,
+          style: "destructive",
+          onPress: () => void onSignOut(),
+        },
+      ],
+    );
+  };
+
   return (
     <Screen keyboard centered>
       <ScrollView
@@ -59,33 +58,43 @@ export default function PendingAccess() {
       >
         <View className="gap-2">
           <Text accessibilityRole="header" className="text-display text-ink">
-            {copy.title}
+            {needsVerification ? AUTH.pendingVerifyTitle : AUTH.noSocietyTitle}
           </Text>
-          <Text className="text-body text-ink-muted">{copy.body}</Text>
+          <Text className="text-body text-ink-muted">
+            {needsVerification ? AUTH.pendingVerifyBody : AUTH.noSocietyBody}
+          </Text>
         </View>
 
         {needsVerification ? (
-          <ContactDetailsSection emphasis="onboarding" />
+          showVerify ? (
+            <ContactDetailsSection emphasis="onboarding" startOpen />
+          ) : (
+            <View className="gap-3">
+              <Button title={AUTH.verifyNow} onPress={() => setShowVerify(true)} />
+              <Button
+                title={AUTH.verifyLater}
+                variant="secondary"
+                onPress={onVerifyLater}
+              />
+            </View>
+          )
         ) : (
           <View className="gap-3">
-            <View className="rounded-md border border-deny bg-deny-bg px-3 py-3">
+            <View className="rounded-xl border border-deny bg-deny-bg px-3 py-3">
               <Text className="text-label text-deny-text">
                 No society profile linked
               </Text>
               <Text className="mt-1 text-caption text-ink-soft">
-                Your Clerk account is signed in, but it is not mapped in{" "}
-                <Text className="text-ink">demo_seed.sql</Text>. Wrong subject
-                IDs look like an empty app — not an auth error. Re-run seed with
-                your Clerk <Text className="text-ink">user_…</Text> subjects, then
-                tap Check again.
+                Ask your admin to invite your verified email or phone, then tap
+                Check again.
               </Text>
             </View>
-            <Button title="Check again" onPress={retryProfile} />
+            <Button title={AUTH.checkAgain} onPress={retryProfile} />
           </View>
         )}
 
         <Button
-          title="Sign out"
+          title={AUTH.signOut}
           variant="ghost"
           onPress={() => void onSignOut()}
         />

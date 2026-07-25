@@ -10,7 +10,6 @@ import {
   IconTile,
   QueryErrorState,
   Screen,
-  SectionTitle,
   Skeleton,
 } from "@/components/ui";
 import { Countdown } from "@/components/Countdown";
@@ -154,7 +153,9 @@ export default function ResidentHome() {
             </HeroCard>
           ) : null}
 
-          <SectionTitle>Quick actions</SectionTitle>
+          <View className="flex-row items-center justify-between">
+            <Text className="text-title text-ink">Quick actions</Text>
+          </View>
           <ScrollView
             horizontal
             showsHorizontalScrollIndicator={false}
@@ -199,7 +200,7 @@ export default function ResidentHome() {
           <SosButton kind="sos" />
 
           <View className="flex-row items-center justify-between">
-            <SectionTitle>Pending visitor</SectionTitle>
+            <Text className="text-title text-ink">Pending visitor</Text>
             {!!data?.length ? (
               <Pressable
                 accessibilityRole="button"
@@ -207,7 +208,7 @@ export default function ResidentHome() {
                   router.push("/(resident)/pre-approvals?tab=pending" as any)
                 }
               >
-                <Text className="text-caption text-primary-text">See all</Text>
+                <Text className="text-caption text-accent-text">See all</Text>
               </Pressable>
             ) : null}
           </View>
@@ -314,7 +315,7 @@ export default function ResidentHome() {
 
           {latestNotice ? (
             <>
-              <SectionTitle>Today’s notice</SectionTitle>
+              <Text className="text-title text-ink">Today's notice</Text>
               <Pressable
                 accessibilityRole="button"
                 accessibilityLabel="Open notices"
@@ -329,7 +330,7 @@ export default function ResidentHome() {
                   <Text className="text-body text-ink-soft" numberOfLines={2}>
                     {latestNotice.body}
                   </Text>
-                  <Text className="text-caption text-primary-text">
+                  <Text className="text-caption text-accent-text">
                     View all notices →
                   </Text>
                 </Card>
@@ -339,7 +340,7 @@ export default function ResidentHome() {
 
           {!!insideNow?.length && (
             <>
-              <SectionTitle>Inside now</SectionTitle>
+              <Text className="text-title text-ink">Inside now</Text>
               <Card>
                 {insideNow.map((log: any) => (
                   <View

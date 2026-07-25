@@ -1,5 +1,6 @@
 import { AppIcon, Badge, Button, Card, Field, SectionTitle } from "@/components/ui";
 import { clerkErrorMessage, isValidIdentity } from "@/features/auth/identity";
+import { CONTACT } from "@/lib/copy";
 import { useSessionStore } from "@/stores/session";
 import { useThemeColors } from "@/theme/useThemeColors";
 import { useUser } from "@clerk/expo";
@@ -9,28 +10,20 @@ import { Alert, Text, View } from "react-native";
 type Channel = "email" | "phone";
 
 /**
- * Contact details — Phases 2.2, 2.3 and 2.4.
- *
- * Email and phone collection plus their verification used to live inside the
- * sign-up flow, where they blocked account creation. They live here now, and
- * this component is mounted in two places:
- *
- *   * Profile -> Contact details, for users already inside the app.
- *   * `/(auth)/pending-access`, the lobby for a signed-in user who has no
- *     society yet — same component, so there is exactly one implementation
- *     of "add and verify a contact".
- *
- * Verifying either channel calls `retryProfile()`, which re-runs the invite
- * claim in the root layout. That is the whole point of verification in Portl:
- * it is not a hoop, it is how the app matches you to your society's invite.
+ * Contact capture + verification — after account creation, optional.
+ * Mounted in Profile and pending-access. Never blocks account creation;
+ * the user chooses when to verify.
  */
-
 interface Props {
-  /** Lobby framing when the user has no society yet. */
   emphasis?: "settings" | "onboarding";
+  /** When false, hide the verify form until the parent asks to show it. */
+  startOpen?: boolean;
 }
 
-export function ContactDetailsSection({ emphasis = "settings" }: Props) {
+export function ContactDetailsSection({
+  emphasis = "settings",
+  startOpen = false,
+}: Props) {
   const { user } = useUser();
   const colors = useThemeColors();
   const retryProfile = useSessionStore((s) => s.retryProfile);
@@ -40,7 +33,7 @@ export function ContactDetailsSection({ emphasis = "settings" }: Props) {
   const [code, setCode] = useState("");
   const [sent, setSent] = useState(false);
   const [busy, setBusy] = useState(false);
-  const [adding, setAdding] = useState(emphasis === "onboarding");
+  const [adding, setAdding] = useState(startOpen);
 
   const email = user?.primaryEmailAddress;
   const phone = user?.primaryPhoneNumber;
@@ -52,7 +45,7 @@ export function ContactDetailsSection({ emphasis = "settings" }: Props) {
     setSent(false);
     setCode("");
     setValue("");
-    setAdding(emphasis === "onboarding");
+    setAdding(false);
   };
 
   const sendCode = async () => {
@@ -104,7 +97,6 @@ export function ContactDetailsSection({ emphasis = "settings" }: Props) {
       await user.reload();
 
       reset();
-      // Verified — the root layout can now attempt the invite claim.
       retryProfile();
     } catch (error) {
       Alert.alert(
@@ -119,11 +111,10 @@ export function ContactDetailsSection({ emphasis = "settings" }: Props) {
   return (
     <View className="gap-3">
       {emphasis === "settings" ? (
-        <SectionTitle>Contact details</SectionTitle>
+        <SectionTitle>{CONTACT.sectionTitle}</SectionTitle>
       ) : null}
 
       <Card className="gap-4">
-        {/* Current state, so the user can see what Portl already knows. */}
         <View className="gap-3">
           <ContactRow
             icon="mail"
@@ -143,15 +134,12 @@ export function ContactDetailsSection({ emphasis = "settings" }: Props) {
         </View>
 
         {!anyVerified ? (
-          <Text className="text-caption text-ink-muted">
-            Verifying one contact is how your society matches you to its
-            invitation. Neither is required to use your account.
-          </Text>
+          <Text className="text-caption text-ink-muted">{CONTACT.verifyHint}</Text>
         ) : null}
 
         {!adding ? (
           <Button
-            title={anyVerified ? "Add another contact" : "Add and verify"}
+            title={anyVerified ? CONTACT.addAnother : CONTACT.addAndVerify}
             variant="secondary"
             onPress={() => setAdding(true)}
           />
@@ -193,23 +181,21 @@ export function ContactDetailsSection({ emphasis = "settings" }: Props) {
               }
             />
             <Button
-              title="Send code"
+              title={CONTACT.sendCode}
               onPress={() => void sendCode()}
               loading={busy}
             />
-            {emphasis === "settings" ? (
-              <Button
-                title="Cancel"
-                variant="ghost"
-                onPress={reset}
-                disabled={busy}
-              />
-            ) : null}
+            <Button
+              title={CONTACT.cancel}
+              variant="ghost"
+              onPress={reset}
+              disabled={busy}
+            />
           </View>
         ) : (
           <View className="gap-3">
             <Text className="text-body text-ink-soft">
-              Enter the code we sent to {value.trim()}.
+              {CONTACT.codeSentTo(value.trim())}
             </Text>
             <Field
               label="Verification code"
@@ -222,13 +208,13 @@ export function ContactDetailsSection({ emphasis = "settings" }: Props) {
               autoFocus
             />
             <Button
-              title="Verify"
+              title={CONTACT.verify}
               onPress={() => void confirmCode()}
               loading={busy}
               disabled={code.trim().length < 6}
             />
             <Button
-              title="Use a different contact"
+              title={CONTACT.useDifferent}
               variant="ghost"
               onPress={() => {
                 setSent(false);
@@ -267,7 +253,7 @@ function ContactRow({
       </View>
       {value ? (
         <Badge
-          label={verified ? "Verified" : "Unverified"}
+          label={verified ? CONTACT.verified : CONTACT.unverified}
           tone={verified ? "approve" : "warn"}
         />
       ) : null}

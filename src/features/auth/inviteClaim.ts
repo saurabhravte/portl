@@ -101,8 +101,8 @@ export function claimReasonCopy(reason: ClaimReason | "unknown"): {
   switch (reason) {
     case "identity_unverified":
       return {
-        title: "One quick step to join your society",
-        body: "Verify an email address or phone number and we'll match you to your society's invitation automatically.",
+        title: "Verify a contact when you're ready",
+        body: "Add and verify an email or phone so your society can match you to its invitation. You choose when — it is never required just to keep your account.",
       };
     case "identity_mismatch":
       return {

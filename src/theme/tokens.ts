@@ -4,17 +4,10 @@
  * UI styling lives in `src/global.css` + `className`.
  *
  * These MIRROR the CSS variables in global.css exactly. `tokens.parity.test.ts`
- * parses both files and fails if they ever drift, because a mismatch here is
- * invisible in review and shows up as one wrong-coloured spinner in dark mode.
+ * parses both files and fails if they ever drift.
  *
- * Brand direction: Portl claret (Primary/CTA) with teal as the secondary
- * accent, on a warm paper background.
- *
- * Three families, do not mix them up:
- *   <role>      FILL. Backgrounds, borders, icons, chart series.
- *   <role>Text  the same role used AS TEXT on paper/surface. Required in
- *               light mode, where several fills fail AA as text.
- *   on<Role>    label drawn on top of the fill.
+ * Brand direction: black/white primary with vibrant component accents.
+ * No purple/violet. No gradients.
  */
 export type ColorToken =
   | "primary" | "primarySoft" | "primaryText" | "onPrimary"
@@ -31,120 +24,115 @@ export type ColorToken =
 export type ThemeColors = Record<ColorToken, string>;
 
 export const lightColors: ThemeColors = {
-  primary: "#9A1343",
-  primarySoft: "#F3E8DC",
-  primaryText: "#9A1343",
+  primary: "#111111",
+  primarySoft: "#EBEBEB",
+  primaryText: "#111111",
   onPrimary: "#FFFFFF",
 
-  accent: "#0084A1",
-  accentStrong: "#00647A",
-  accentSoft: "#F3E8DC",
-  accentText: "#005F73",
+  accent: "#00A89D",
+  accentStrong: "#008F86",
+  accentSoft: "#DFF7F5",
+  accentText: "#007A73",
   onAccent: "#FFFFFF",
 
-  paper: "#FAF6F0",
+  paper: "#F2F2F2",
   surface: "#FFFFFF",
-  surfaceAlt: "#F3E8DC",
-  border: "#E3D8CC",
-  borderStrong: "#8A7568",
+  surfaceAlt: "#EBEBEB",
+  border: "#E0E0E0",
+  borderStrong: "#8A8A8A",
 
-  ink: "#211C1E",
-  inkSoft: "#443A3D",
-  inkMuted: "#6E625D",
-  inkFaint: "#A2938C",
+  ink: "#0A0A0A",
+  inkSoft: "#333333",
+  inkMuted: "#6B6B6B",
+  inkFaint: "#A3A3A3",
   inverse: "#FFFFFF",
 
-  approve: "#1A6B42",
-  approveBg: "#DCEFE3",
-  approveText: "#1A6B42",
+  approve: "#0D9F6E",
+  approveBg: "#D8F5EA",
+  approveText: "#0A7A55",
   onApprove: "#FFFFFF",
 
-  deny: "#B3261E",
-  denyBg: "#FBE2DF",
-  denyText: "#B3261E",
+  deny: "#E03E2F",
+  denyBg: "#FDE8E6",
+  denyText: "#B82E22",
   onDeny: "#FFFFFF",
 
-  warn: "#E69A28",
-  warnBg: "#F3E8DC",
-  warnText: "#7A4E0F",
-  onWarn: "#211C1E",
+  warn: "#F5A524",
+  warnBg: "#FFF3DC",
+  warnText: "#8A5A0A",
+  onWarn: "#0A0A0A",
 
-  info: "#00647A",
-  infoSoft: "#F3E8DC",
-  infoText: "#005F73",
+  info: "#1A8CFF",
+  infoSoft: "#E5F2FF",
+  infoText: "#0A6AD4",
   onInfo: "#FFFFFF",
 
-  onboardBg: "#FFFFFF",
-  onboardInk: "#000000",
-  onboardInkMuted: "#5C5C5C",
-  onboardCta: "#000000",
+  onboardBg: "#F2F2F2",
+  onboardInk: "#0A0A0A",
+  onboardInkMuted: "#6B6B6B",
+  onboardCta: "#111111",
   onOnboardCta: "#FFFFFF",
   onboardDot: "#D4D4D4",
-  onboardBorder: "#E6E6E6",
+  onboardBorder: "#E0E0E0",
 };
 
 export const darkColors: ThemeColors = {
-  primary: "#D82862",
-  primarySoft: "#38202B",
-  primaryText: "#F06292",
-  onPrimary: "#FFFFFF",
+  primary: "#F5F5F5",
+  primarySoft: "#2A2A2A",
+  primaryText: "#F5F5F5",
+  onPrimary: "#0A0A0A",
 
-  accent: "#00A5C8",
-  accentStrong: "#00A5C8",
-  accentSoft: "#38202B",
-  accentText: "#00A5C8",
-  onAccent: "#161418",
+  accent: "#2DD4BF",
+  accentStrong: "#2DD4BF",
+  accentSoft: "#0F2F2C",
+  accentText: "#5EEAD4",
+  onAccent: "#0A0A0A",
 
-  paper: "#161418",
-  surface: "#231F26",
-  surfaceAlt: "#38202B",
-  border: "#3A343D",
-  borderStrong: "#635969",
+  paper: "#0A0A0A",
+  surface: "#171717",
+  surfaceAlt: "#242424",
+  border: "#2E2E2E",
+  borderStrong: "#6B6B6B",
 
-  ink: "#F6ECE0",
-  inkSoft: "#D8CCC2",
-  inkMuted: "#AFA29A",
-  inkFaint: "#7D7278",
-  inverse: "#161418",
+  ink: "#F5F5F5",
+  inkSoft: "#D4D4D4",
+  inkMuted: "#A3A3A3",
+  inkFaint: "#737373",
+  inverse: "#0A0A0A",
 
-  approve: "#5FD39A",
-  approveBg: "#14301F",
-  approveText: "#5FD39A",
-  onApprove: "#161418",
+  approve: "#34D399",
+  approveBg: "#0F2A1F",
+  approveText: "#6EE7B7",
+  onApprove: "#0A0A0A",
 
-  deny: "#F2938C",
-  denyBg: "#351A18",
-  denyText: "#F2938C",
-  onDeny: "#161418",
+  deny: "#F87171",
+  denyBg: "#3A1512",
+  denyText: "#FCA5A5",
+  onDeny: "#0A0A0A",
 
-  warn: "#E69A28",
-  warnBg: "#38202B",
-  warnText: "#E69A28",
-  onWarn: "#161418",
+  warn: "#FBBF24",
+  warnBg: "#2A2208",
+  warnText: "#FCD34D",
+  onWarn: "#0A0A0A",
 
-  info: "#00A5C8",
-  infoSoft: "#38202B",
-  infoText: "#00A5C8",
-  onInfo: "#161418",
+  info: "#60A5FA",
+  infoSoft: "#0F1F33",
+  infoText: "#93C5FD",
+  onInfo: "#0A0A0A",
 
-  onboardBg: "#000000",
-  onboardInk: "#FFFFFF",
-  onboardInkMuted: "#A8A8A8",
-  onboardCta: "#FFFFFF",
-  onOnboardCta: "#000000",
+  onboardBg: "#0A0A0A",
+  onboardInk: "#F5F5F5",
+  onboardInkMuted: "#A3A3A3",
+  onboardCta: "#F5F5F5",
+  onOnboardCta: "#0A0A0A",
   onboardDot: "#3D3D3D",
-  onboardBorder: "#262626",
+  onboardBorder: "#2E2E2E",
 };
 
 export function getColors(scheme: string | null | undefined): ThemeColors {
   return scheme === "dark" ? darkColors : lightColors;
 }
 
-/* -- Spacing scale (Phase 3.1) -----------------------------------------
- * Mirrors --spacing-* in global.css. For the rare RN API that needs a
- * number (FlatList offsets, scroll insets, SVG geometry). Layout in JSX
- * uses the Tailwind spacing classes, never these.
- */
 export const SPACING = {
   xs: 4,
   sm: 8,
@@ -158,50 +146,29 @@ export const SPACING = {
 
 export type SpacingStep = keyof typeof SPACING;
 
-/* -- Elevation (Phase 3.1) ---------------------------------------------
- * Two steps, expressed as RN shadow props so every raised surface in the
- * app is one of exactly two shapes.
- */
 export const ELEVATION = {
   1: {
     shadowColor: "#000000",
-    shadowOpacity: 0.05,
-    shadowRadius: 8,
+    shadowOpacity: 0.06,
+    shadowRadius: 12,
     shadowOffset: { width: 0, height: 2 },
-    elevation: 1,
+    elevation: 2,
   },
   2: {
     shadowColor: "#000000",
-    shadowOpacity: 0.12,
+    shadowOpacity: 0.1,
     shadowRadius: 20,
     shadowOffset: { width: 0, height: 8 },
     elevation: 6,
   },
 } as const;
 
-/* -- Role accents (Phase 5.5) -------------------------------------------
- * ONE CTA COLOUR FOR THE WHOLE APP.
- *
- * This map used to give each role its own `accent`, which was also used for
- * that role's primary CTA: claret for guards, teal for admins, green for
- * residents. Three different "primary" buttons is exactly what Phase 5.5
- * forbids, and it also meant the approve-green was doing double duty as both
- * "this is the resident theme" and "this action approves something".
- *
- * `accent` is now `primary` for every role -- the CTA is claret everywhere.
- * Roles are distinguished only by `emphasis`, which is for decorative chrome
- * (hero tint, active tab underline) and never for a button.
- */
 export type AppRole = "resident" | "guard" | "admin";
 
 export interface RoleAccent {
-  /** Primary CTA fill. Identical across roles by design -- do not vary it. */
   accent: ColorToken;
-  /** Tint behind icons/chips on that role's screens. */
   accentSoft: ColorToken;
-  /** The CTA colour rendered as text. AA-safe in both schemes. */
   accentText: ColorToken;
-  /** Decorative role signal. Chrome only, never a button fill. */
   emphasis: ColorToken;
 }
 
@@ -217,7 +184,6 @@ export const ROLE_ACCENTS: Record<AppRole, RoleAccent> = {
   resident: { ...SHARED_CTA, emphasis: "approve" },
 };
 
-/** Resolve a role's accent tokens to concrete hex values for the given scheme. */
 export function getRoleAccent(
   role: AppRole,
   scheme: string | null | undefined,
@@ -232,18 +198,9 @@ export function getRoleAccent(
   };
 }
 
-/* -- Data-viz -----------------------------------------------------------
- * Sequential ramp for heatmaps/intensity charts, light -> dark. Index 0 is
- * the "no data" step and must read as empty, not as a low value.
- *
- * The two mid-steps used to be hardcoded Tailwind blues (#2C4A7C, #93C5FD)
- * left over from the previous palette -- the only off-token colours left in
- * src/. They are now interpolated from the teal family so the ramp shifts
- * with the theme and `audit:design` stays clean.
- */
 const CHART_MID = {
-  light: ["#7FC1D0", "#3FA3B9"],
-  dark: ["#00566B", "#4FC3DD"],
+  light: ["#7FD4CD", "#3DB8AD"],
+  dark: ["#0F4A45", "#5EEAD4"],
 } as const;
 
 export function getChartScale(scheme: string | null | undefined): string[] {

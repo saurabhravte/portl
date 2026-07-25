@@ -2,116 +2,89 @@
 @import "uniwind";
 
 /*
- * Portl design system v5 — "Warm Claret".
- * ============================================================================
+ * Portl design system v6 — "Modern Mono".
  *
- * SINGLE SOURCE OF TRUTH. Every colour, radius, type step and spacing step in
- * the app resolves here. `src/theme/tokens.ts` mirrors these exactly for the
- * handful of APIs that cannot take a className (StatusBar, tabBarStyle,
- * ActivityIndicator, Razorpay, react-native-svg). Nothing else may define a
- * colour. `bun run audit:design` fails if a raw hex appears anywhere in src/.
+ * Primary: shades of black and white. Vibrant accents on components only.
+ * No purple/violet. No gradients.
+ *
+ * SINGLE SOURCE OF TRUTH. `src/theme/tokens.ts` mirrors these for StatusBar,
+ * tabBarStyle, ActivityIndicator, Razorpay, and react-native-svg.
+ * `bun run audit:design` fails if a raw hex appears elsewhere in src/.
  *
  * -- Token families ---------------------------------------------------------
  *
  *   <role>        FILL. Backgrounds, borders, icon glyphs, chart series.
- *   <role>-text   The same role used AS TEXT on paper/surface. Darkened (light)
- *                 or lightened (dark) until it clears WCAG AA 4.5:1.
+ *   <role>-text   The same role used AS TEXT on paper/surface (AA-safe).
  *   on-<role>     Label drawn ON TOP of that role's fill.
- *   <role>-soft   Low-emphasis tint of the role, for chips and icon tiles.
- *
- * Never use a FILL token via `text-*`. That is what the -text variants exist
- * for, and the audit script enforces it.
- *
- * -- Contrast notes (measured, not guessed) ---------------------------------
- *
- * Three values in the supplied brand spec do not clear AA on their own and are
- * handled explicitly rather than silently shipped:
- *
- *  1. Secondary #0084A1 sits in a dead zone -- white on it is 4.36:1 and near
- *     black on it is 4.20:1, so NEITHER label passes. It is therefore an
- *     ICON/FILL colour only (4.05:1 vs background, clears the 3:1 graphics
- *     bar). Any teal surface that carries a text label uses
- *     --color-accent-strong (#00647A, white at 6.77:1) instead.
- *
- *  2. Accent #E69A28 is 2.16:1 on the light background -- it fails even the
- *     3:1 non-text bar. Kept as the brand rating/alert fill because it is
- *     specified, but it must never be the only carrier of meaning in light
- *     mode: pair the star with its numeric value, the alert dot with text.
- *     Use --color-warn-text for any amber wording.
- *
- *  3. Dark CTA #D82862 is 3.83:1 as text on the dark background. The fill is
- *     used exactly as specified (white on it is 4.77:1, passes); the -text
- *     variant lightens to #F06292 (5.99:1) for links and inline emphasis.
- *
- * Everything else in the spec passes as given.
+ *   <role>-soft   Low-emphasis tint for chips and icon tiles.
  */
 
 @theme {
-  /* -- Brand -- Primary / CTA ------------------------------------------- */
-  --color-primary: #9a1343;        /* CTA fills, active tab              */
-  --color-primary-soft: #f3e8dc;   /* chips / badges / icon tiles        */
-  --color-primary-text: #9a1343;   /* 7.65:1 -- claret used AS TEXT      */
-  --color-on-primary: #ffffff;     /* 8.24:1 on #9A1343                  */
+  /* -- Brand -- Primary / CTA (near-black) ------------------------------- */
+  --color-primary: #111111;
+  --color-primary-soft: #ebebeb;
+  --color-primary-text: #111111;
+  --color-on-primary: #ffffff;
 
-  /* -- Secondary -- active icons ---------------------------------------- */
-  --color-accent: #0084a1;         /* ICONS AND FILLS ONLY. See note 1.  */
-  --color-accent-strong: #00647a;  /* teal that carries a white label    */
-  --color-accent-soft: #f3e8dc;
-  --color-accent-text: #005f73;    /* 6.76:1                             */
-  --color-on-accent: #ffffff;      /* valid on accent-strong, not accent */
+  /* -- Secondary -- vibrant teal for icons / highlights ------------------ */
+  --color-accent: #00a89d;
+  --color-accent-strong: #008f86;
+  --color-accent-soft: #dff7f5;
+  --color-accent-text: #007a73;
+  --color-on-accent: #ffffff;
 
   /* -- Surfaces ---------------------------------------------------------- */
-  --color-paper: #faf6f0;          /* app background                     */
-  --color-surface: #ffffff;        /* cards                              */
-  --color-surface-alt: #f3e8dc;    /* chips, inputs, subtle wells        */
-  --color-border: #e3d8cc;         /* dividers, card hairlines           */
-  --color-border-strong: #8a7568;  /* 4.04:1 -- input outlines, focus    */
+  --color-paper: #f2f2f2;
+  --color-surface: #ffffff;
+  --color-surface-alt: #ebebeb;
+  --color-border: #e0e0e0;
+  --color-border-strong: #8a8a8a;
 
   /* -- Ink --------------------------------------------------------------- */
-  --color-ink: #211c1e;            /* primary text   -- 15.61:1          */
-  --color-ink-soft: #443a3d;
-  --color-ink-muted: #6e625d;      /* secondary text --  5.47:1          */
-  --color-ink-faint: #a2938c;      /* decorative / placeholders only     */
+  --color-ink: #0a0a0a;
+  --color-ink-soft: #333333;
+  --color-ink-muted: #6b6b6b;
+  --color-ink-faint: #a3a3a3;
   --color-inverse: #ffffff;
 
-  /* -- Status -- universal, never decorative ----------------------------- */
-  --color-approve: #1a6b42;
-  --color-approve-bg: #dcefe3;
-  --color-approve-text: #1a6b42;   /* 6.05:1 */
-  --color-on-approve: #ffffff;     /* 6.51:1 */
+  /* -- Status -- vibrant, never purple ----------------------------------- */
+  --color-approve: #0d9f6e;
+  --color-approve-bg: #d8f5ea;
+  --color-approve-text: #0a7a55;
+  --color-on-approve: #ffffff;
 
-  --color-deny: #b3261e;
-  --color-deny-bg: #fbe2df;
-  --color-deny-text: #b3261e;      /* 6.07:1 */
-  --color-on-deny: #ffffff;        /* 6.54:1 */
+  --color-deny: #e03e2f;
+  --color-deny-bg: #fde8e6;
+  --color-deny-text: #b82e22;
+  --color-on-deny: #ffffff;
 
-  --color-warn: #e69a28;           /* ratings / alerts. See note 2.      */
-  --color-warn-bg: #f3e8dc;
-  --color-warn-text: #7a4e0f;      /* 6.67:1 -- amber unusable as text   */
-  --color-on-warn: #211c1e;        /* 7.86:1 */
+  --color-warn: #f5a524;
+  --color-warn-bg: #fff3dc;
+  --color-warn-text: #8a5a0a;
+  --color-on-warn: #0a0a0a;
 
-  --color-info: #00647a;         /* label-safe teal, see note 1 */
-  --color-info-soft: #f3e8dc;
-  --color-info-text: #005f73;      /* 6.76:1 */
+  --color-info: #1a8cff;
+  --color-info-soft: #e5f2ff;
+  --color-info-text: #0a6ad4;
   --color-on-info: #ffffff;
 
-  /* -- Onboarding -- deliberately monochrome (Phase 4.4) ----------------- */
-  --color-onboard-bg: #ffffff;
-  --color-onboard-ink: #000000;
-  --color-onboard-ink-muted: #5c5c5c;
-  --color-onboard-cta: #000000;
+  /* -- Onboarding — same family as the rest of the app ------------------- */
+  --color-onboard-bg: #f2f2f2;
+  --color-onboard-ink: #0a0a0a;
+  --color-onboard-ink-muted: #6b6b6b;
+  --color-onboard-cta: #111111;
   --color-on-onboard-cta: #ffffff;
   --color-onboard-dot: #d4d4d4;
-  --color-onboard-border: #e6e6e6;
+  --color-onboard-border: #e0e0e0;
 
-  /* -- Radius (Phase 3.1) ------------------------------------------------ */
-  --radius-sm: 10px;
-  --radius-md: 14px;
-  --radius-lg: 18px;
-  --radius-xl: 24px;
+  /* -- Radius ------------------------------------------------------------ */
+  --radius-sm: 12px;
+  --radius-md: 16px;
+  --radius-lg: 20px;
+  --radius-xl: 28px;
   --radius-pill: 999px;
 
-  /* -- Spacing (Phase 3.1) -- 4pt grid, no value outside this scale ------ */
+  /* -- Spacing -- 4pt grid ----------------------------------------------- */
   --spacing-xs: 4px;
   --spacing-sm: 8px;
   --spacing-md: 12px;
@@ -121,19 +94,15 @@
   --spacing-2xl: 48px;
   --spacing-3xl: 64px;
 
-  /* -- Elevation (Phase 3.1) ----------------------------------------------
-     Two steps only. Flat by default -- a card is defined by its surface and
-     hairline border, not by a drop shadow. Level 2 is reserved for content
-     that genuinely floats (sheets, menus, the gate alert). Anything else is
-     decorative clutter and violates the Phase 7.5 minimal gate.            */
-  --elevation-1-opacity: 0.05;
-  --elevation-1-radius: 8px;
+  /* -- Elevation --------------------------------------------------------- */
+  --elevation-1-opacity: 0.06;
+  --elevation-1-radius: 12px;
   --elevation-1-offset: 2px;
-  --elevation-2-opacity: 0.12;
+  --elevation-2-opacity: 0.1;
   --elevation-2-radius: 20px;
   --elevation-2-offset: 8px;
 
-  /* -- Type scale (Phase 3.2) -- Manrope only, five steps, no exceptions - */
+  /* -- Type scale -- Manrope --------------------------------------------- */
   --text-display: 28px;
   --text-display--line-height: 1.15;
   --text-display--letter-spacing: -0.5px;
@@ -158,64 +127,57 @@
   --text-caption--font-weight: 500;
 }
 
-/* -- Dark mode -------------------------------------------------------------
-   Driven by the in-app switch via Appearance.setColorScheme()
-   (src/stores/theme.ts), which is why this is prefers-color-scheme rather
-   than a class. Every token above must have an override here or it will
-   silently keep its light value -- that is the Phase 7.4 parity failure this
-   block exists to prevent.                                                */
 @media (prefers-color-scheme: dark) {
   :root {
-    --color-primary: #d82862;
-    --color-primary-soft: #38202b;
-    --color-primary-text: #f06292;   /* 5.99:1 -- spec CTA is 3.83 as text */
-    --color-on-primary: #ffffff;     /* 4.77:1 */
+    --color-primary: #f5f5f5;
+    --color-primary-soft: #2a2a2a;
+    --color-primary-text: #f5f5f5;
+    --color-on-primary: #0a0a0a;
 
-    --color-accent: #00a5c8;
-    --color-accent-strong: #00a5c8;  /* clears AA at spec value in dark   */
-    --color-accent-soft: #38202b;
-    --color-accent-text: #00a5c8;    /* 6.29:1 */
-    --color-on-accent: #161418;      /* 6.29:1 */
+    --color-accent: #2dd4bf;
+    --color-accent-strong: #2dd4bf;
+    --color-accent-soft: #0f2f2c;
+    --color-accent-text: #5eead4;
+    --color-on-accent: #0a0a0a;
 
-    --color-paper: #161418;
-    --color-surface: #231f26;
-    --color-surface-alt: #38202b;
-    --color-border: #3a343d;
-    --color-border-strong: #635969;
+    --color-paper: #0a0a0a;
+    --color-surface: #171717;
+    --color-surface-alt: #242424;
+    --color-border: #2e2e2e;
+    --color-border-strong: #6b6b6b;
 
-    --color-ink: #f6ece0;            /* 15.68:1 */
-    --color-ink-soft: #d8ccc2;
-    --color-ink-muted: #afa29a;      /*  7.37:1 */
-    --color-ink-faint: #7d7278;
-    --color-inverse: #161418;
+    --color-ink: #f5f5f5;
+    --color-ink-soft: #d4d4d4;
+    --color-ink-muted: #a3a3a3;
+    --color-ink-faint: #737373;
+    --color-inverse: #0a0a0a;
 
-    --color-approve: #5fd39a;
-    --color-approve-bg: #14301f;
-    --color-approve-text: #5fd39a;   /* 9.82:1 */
-    --color-on-approve: #161418;
+    --color-approve: #34d399;
+    --color-approve-bg: #0f2a1f;
+    --color-approve-text: #6ee7b7;
+    --color-on-approve: #0a0a0a;
 
-    --color-deny: #f2938c;
-    --color-deny-bg: #351a18;
-    --color-deny-text: #f2938c;      /* 8.13:1 */
-    --color-on-deny: #161418;
+    --color-deny: #f87171;
+    --color-deny-bg: #3a1512;
+    --color-deny-text: #fca5a5;
+    --color-on-deny: #0a0a0a;
 
-    --color-warn: #e69a28;
-    --color-warn-bg: #38202b;
-    --color-warn-text: #e69a28;      /* 7.86:1 -- amber works in dark     */
-    --color-on-warn: #161418;
+    --color-warn: #fbbf24;
+    --color-warn-bg: #2a2208;
+    --color-warn-text: #fcd34d;
+    --color-on-warn: #0a0a0a;
 
-    --color-info: #00a5c8;
-    --color-info-soft: #38202b;
-    --color-info-text: #00a5c8;
-    --color-on-info: #161418;
+    --color-info: #60a5fa;
+    --color-info-soft: #0f1f33;
+    --color-info-text: #93c5fd;
+    --color-on-info: #0a0a0a;
 
-    /* Onboarding inverts to white-on-black, staying monochrome. */
-    --color-onboard-bg: #000000;
-    --color-onboard-ink: #ffffff;
-    --color-onboard-ink-muted: #a8a8a8;
-    --color-onboard-cta: #ffffff;
-    --color-on-onboard-cta: #000000;
+    --color-onboard-bg: #0a0a0a;
+    --color-onboard-ink: #f5f5f5;
+    --color-onboard-ink-muted: #a3a3a3;
+    --color-onboard-cta: #f5f5f5;
+    --color-on-onboard-cta: #0a0a0a;
     --color-onboard-dot: #3d3d3d;
-    --color-onboard-border: #262626;
+    --color-onboard-border: #2e2e2e;
   }
 }

@@ -154,6 +154,10 @@ const ICONS = {
   mail: "mail-outline",
   phone: "call-outline",
   edit: "create-outline",
+  location: "location-outline",
+  folder: "folder-outline",
+  document: "document-text-outline",
+  add: "add",
 } as const;
 
 export type AppIconName = keyof typeof ICONS;
@@ -281,14 +285,14 @@ export function Card({
 }) {
   return (
     <View
-      className={`gap-2 rounded-lg border border-border bg-surface p-4 ${className ?? ""}`}
+      className={`gap-2 rounded-xl border border-border bg-surface p-4 ${className ?? ""}`}
     >
       {children}
     </View>
   );
 }
 
-/** Filled brand card — "Maintenance Due", "Outstanding Dues" (mockup). */
+/** Filled brand card — maintenance due, outstanding dues, etc. */
 export function HeroCard({
   children,
   className,
@@ -297,7 +301,7 @@ export function HeroCard({
   className?: string;
 }) {
   return (
-    <View className={`gap-2 rounded-lg bg-primary p-4 ${className ?? ""}`}>
+    <View className={`gap-2 rounded-xl bg-primary p-4 ${className ?? ""}`}>
       {children}
     </View>
   );
@@ -418,14 +422,14 @@ export function IconTile({
       style={{ width: 64 }}
     >
       <View
-        className={`h-14 w-14 items-center justify-center rounded-md border border-border ${
-          accent ? "bg-accent-soft" : "bg-primary-soft"
+        className={`h-14 w-14 items-center justify-center rounded-lg ${
+          accent ? "bg-accent-soft" : "bg-info-soft"
         }`}
       >
         <AppIcon
           name={icon}
           size={24}
-          color={accent ? colors.accent : colors.primary}
+          color={accent ? colors.accent : colors.info}
         />
       </View>
       <Text className="text-caption text-ink-soft" numberOfLines={1}>
@@ -452,10 +456,10 @@ export function Avatar({
     .toUpperCase();
   return (
     <View
-      className="items-center justify-center rounded-pill bg-primary-soft"
+      className="items-center justify-center rounded-pill bg-accent-soft"
       style={{ width: size, height: size }}
     >
-      <Text className="font-bold text-primary-text" style={{ fontSize: size * 0.36 }}>
+      <Text className="font-bold text-accent-text" style={{ fontSize: size * 0.36 }}>
         {initials}
       </Text>
     </View>
