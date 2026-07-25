@@ -44,7 +44,9 @@ const SLIDES: Slide[] = [
   {
     key: "benefit",
     eyebrow: "WHY PORTL",
-    title: <Text className="text-display text-ink">Approve visitors in one tap</Text>,
+    title: (
+      <Text className="text-display text-ink">Approve visitors in one tap</Text>
+    ),
     body: "When a guard logs someone at the gate, you get an instant request. Approve or deny without getting up.",
   },
   {
@@ -85,14 +87,20 @@ function ApprovalPill({
   const fg = tone === "approve" ? "text-approve" : "text-deny";
   const iconColor = tone === "approve" ? colors.approve : colors.deny;
   return (
-    <View className={`flex-1 flex-row items-center justify-center gap-1.5 rounded-pill px-3 py-2 ${bg}`}>
+    <View
+      className={`flex-1 flex-row items-center justify-center gap-1.5 rounded-pill px-3 py-2 ${bg}`}
+    >
       <AppIcon name={icon} size={16} color={iconColor} />
       <Text className={`text-caption font-semibold ${fg}`}>{label}</Text>
     </View>
   );
 }
 
-function BenefitVisual({ colors }: { colors: ReturnType<typeof useThemeColors> }) {
+function BenefitVisual({
+  colors,
+}: {
+  colors: ReturnType<typeof useThemeColors>;
+}) {
   return (
     <View className="h-60 justify-center rounded-xl bg-primary-soft border border-border p-5">
       {/* A mock "visitor at the gate" approval request card. */}
@@ -101,7 +109,9 @@ function BenefitVisual({ colors }: { colors: ReturnType<typeof useThemeColors> }
           <Avatar name="Guest Visitor" size={40} />
           <View className="flex-1">
             <Text className="text-label text-ink">Delivery — Guest</Text>
-            <Text className="text-caption text-ink-soft">At Gate 1 · for Flat A-101</Text>
+            <Text className="text-caption text-ink-soft">
+              At Gate 1 · for Flat A-101
+            </Text>
           </View>
           <View className="h-8 w-8 items-center justify-center rounded-full bg-accent-soft">
             <AppIcon name="shield" size={16} color={colors.accent} />
@@ -109,14 +119,23 @@ function BenefitVisual({ colors }: { colors: ReturnType<typeof useThemeColors> }
         </View>
         <View className="flex-row gap-2">
           <ApprovalPill label="Deny" icon="close" tone="deny" colors={colors} />
-          <ApprovalPill label="Approve" icon="check" tone="approve" colors={colors} />
+          <ApprovalPill
+            label="Approve"
+            icon="check"
+            tone="approve"
+            colors={colors}
+          />
         </View>
       </View>
     </View>
   );
 }
 
-function NotifyVisual({ colors }: { colors: ReturnType<typeof useThemeColors> }) {
+function NotifyVisual({
+  colors,
+}: {
+  colors: ReturnType<typeof useThemeColors>;
+}) {
   return (
     <View className="h-60 items-center justify-center rounded-xl bg-primary-soft border border-border">
       <View className="h-32 w-32 items-center justify-center rounded-full bg-surface border border-border">
