@@ -131,7 +131,7 @@ sequenceDiagram
 
 **Hero flow:** Guard taps _New Visitor_ → Resident gets notified → taps _Approve_ (5s Undo window) → Guard's screen updates live → _Mark Entry_ / _Mark Exit_. If the resident does not respond in time, the request **expires** and flat residents + admins are notified — the guard can retry or an admin can override. This is expiry + notify, not automatic reassignment of approval.
 
-**Judge entry point:** open [`marketing/index.html`](marketing/index.html) first, then install the preview APK below.
+**Judge entry point:** open [`marketing/index.html`](marketing/index.html) first, then install the [APK](https://drive.google.com/file/d/1Q6LHBGCHEAiDo8yHgokZX11weS1ny2Db/view?usp=sharing) below.
 
 ---
 
@@ -141,9 +141,9 @@ sequenceDiagram
 
 | Resource        | Link                                                |
 | --------------- | --------------------------------------------------- |
-| **Android APK** | [Download preview APK](https://expo.dev/artifacts/eas/8urcvvYxmZ10OR1p2WZroojM-IeOKb3kIGZiXd0P4Rw.apk) ([build page](https://expo.dev/accounts/saurabhravte/projects/portl/builds/59e3087e-a974-4990-b32a-bf5f40ca746b)) |
-| **Demo video**  | `<YOUR_DEMO_VIDEO_URL>` — 2–5 min: gate → approve → entry/exit |
-| **Screenshots** | Add images under [`/screenshots`](screenshots/) (see that folder’s README) |
+| **Android APK** | [Download APK (Google Drive)](https://drive.google.com/file/d/1Q6LHBGCHEAiDo8yHgokZX11weS1ny2Db/view?usp=sharing) |
+| **Demo video**  | [Watch on YouTube](https://youtube.com/shorts/UCmwgT3po4k) — gate → approve → entry/exit |
+| **Screenshots** | [`assets/app-demo/`](assets/app-demo/) |
 | **Marketing**   | [`marketing/index.html`](marketing/index.html) |
 
 ### Demo accounts (seeded)
@@ -154,21 +154,23 @@ sequenceDiagram
 | Guard | `saurabhguard@demo.com` | `saurabhguard` | `Coral7!Whistle` |
 | Admin | `saurabhravte.dev@gmail.com` | `saurabhravte` | `Coral7!Whistle` |
 
-> After running an EAS `preview` build, paste the download link above. Open on Android → download `.apk` → allow _Install unknown apps_ → install.
+> Open the [APK link](https://drive.google.com/file/d/1Q6LHBGCHEAiDo8yHgokZX11weS1ny2Db/view?usp=sharing) on Android → download `.apk` → allow _Install unknown apps_ → install.
 >
 > **Expo Go note:** remote push does not work in Expo Go (SDK 53+). For the gate hero demo, use the preview APK. Notification action buttons open the app to the foreground (~1–3s cold start) before Approve/Deny can run — that latency is intentional so auth is restored.
 
 ### Screenshots
 
-> Add screenshots to a `/screenshots` folder and update the paths below.
+App screens from [`assets/app-demo/`](assets/app-demo/):
 
-|            Resident — Approval             |             Guard — Gate             |             Admin — Dashboard             |
-| :----------------------------------------: | :----------------------------------: | :---------------------------------------: |
-| ![Resident](screenshots/resident-home.png) | ![Guard](screenshots/guard-gate.png) | ![Admin](screenshots/admin-dashboard.png) |
+|              Overview              |                Notices                |             Complaint box              |
+| :--------------------------------: | :-----------------------------------: | :------------------------------------: |
+| ![Overview](assets/app-demo/overview.png) | ![Notices](assets/app-demo/Notice.png) | ![Complaints](assets/app-demo/complain-box.png) |
 
-|                Pre-approval QR                |               Helpdesk                |             Notices & Polls             |
-| :-------------------------------------------: | :-----------------------------------: | :-------------------------------------: |
-| ![Pre-approval](screenshots/pre-approval.png) | ![Helpdesk](screenshots/helpdesk.png) | ![Community](screenshots/community.png) |
+|           Profile & settings            |         Society manage (admin)          |
+| :-------------------------------------: | :-------------------------------------: |
+| ![Profile](assets/app-demo/profile-setting.png) | ![Admin](assets/app-demo/society-manage-admin.png) |
+
+**Demo video:** [YouTube Shorts](https://youtube.com/shorts/UCmwgT3po4k) · local copy: [`assets/app-demo/demo-video.mp4`](assets/app-demo/demo-video.mp4)
 
 ---
 
@@ -365,11 +367,11 @@ CI should run at least `typecheck` + `test` + `lint` before calling a build prod
 Code alone cannot ship a working judge package. Complete these **outside** the repo (or with secrets you own):
 
 1. **EAS project ID** — create/link with `eas init`, set `EAS_PROJECT_ID` in `.env` / EAS env (no `REPLACE` placeholder), rebuild. Push registration stays disabled until this is real.
-2. **Preview APK** — `bun run build:apk`, paste the download URL into Live Demo above.
+2. **Preview APK** — shareable build is linked in [Live Demo](#live-demo) ([Google Drive](https://drive.google.com/file/d/1Q6LHBGCHEAiDo8yHgokZX11weS1ny2Db/view?usp=sharing)). Rebuild with `bun run build:apk` when needed.
 3. **Clerk demo users** — create resident / guard / admin, copy `user_…` subjects, apply `demo_seed.sql` with `-v resident_id=…` etc.
 4. **Supabase migration 0039** — `supabase db push` (or `db reset`) so `visitor_requests.flat_id`, amenity payment expiry cron, and capacity trigger exist.
 5. **Push pipeline** — deploy edge functions, set webhook secret + `pg_cron`/`pg_net` schedules for send-push / receipts; verify a device gets a live gate push.
-6. **Demo video + screenshots** — record 2–5 min gate hero; drop 6 PNGs into `/screenshots`.
+6. **Demo video + screenshots** — [YouTube demo](https://youtube.com/shorts/UCmwgT3po4k); screenshots under [`assets/app-demo/`](assets/app-demo/).
 7. **Demo script** — lead with gate → approve → entry/exit only; amenities/helpdesk are secondary.
 
 Full step-by-step: [`docs/OUTSIDE_CODE_SETUP.md`](docs/OUTSIDE_CODE_SETUP.md).
@@ -381,6 +383,7 @@ Full step-by-step: [`docs/OUTSIDE_CODE_SETUP.md`](docs/OUTSIDE_CODE_SETUP.md).
 ```
 portl/
 ├── assets/
+│   ├── app-demo/             # Screenshots + demo video for README / judges
 │   ├── app-icons-light-dark/ # App icons (Light + Dark, iOS + Android)
 │   └── images/
 ├── src/
