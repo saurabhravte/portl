@@ -356,7 +356,7 @@ bun run verify:demo-seed # Fail loud if demo_seed.sql is not reproducible
 
 CI should run at least `typecheck` + `test` + `lint` before calling a build production-ready.
 
-**New Architecture:** `app.config.js` sets `newArchEnabled: true` (SDK 55 default, asserted explicitly).
+**New Architecture:** Expo SDK 55 enables the New Architecture by default (no `newArchEnabled` field — that key fails `expo-doctor` schema checks).
 
 ---
 

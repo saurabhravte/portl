@@ -40,8 +40,6 @@ module.exports = ({ config }) => {
     name: process.env.EXPO_APP_NAME?.trim() || config.name,
     version: process.env.APP_VERSION?.trim() || config.version,
     owner: process.env.EXPO_OWNER?.trim() || config.owner,
-    // New Architecture is on by default in Expo SDK 55; assert explicitly for reviewers.
-    newArchEnabled: true,
 
     ios: {
       ...config.ios,
