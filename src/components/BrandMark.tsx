@@ -1,8 +1,9 @@
 import { Image } from "expo-image";
 import React from "react";
-import { Text, View } from "react-native";
+import { Text, useColorScheme, View } from "react-native";
 
-const logo = require("../../assets/images/logo.png");
+const lightModeIcon = require("../../assets/app-icons-light-dark/Light/iOS/AppIcon-1024.png");
+const darkModeIcon = require("../../assets/app-icons-light-dark/Dark/iOS/AppIcon-1024.png");
 
 type BrandMarkProps = {
   size?: "sm" | "md" | "lg" | "hero";
@@ -26,6 +27,8 @@ export function BrandMark({
   className,
 }: BrandMarkProps) {
   const px = sizes[size];
+  const isDark = useColorScheme() === "dark";
+  const logo = isDark ? darkModeIcon : lightModeIcon;
   return (
     <View
       accessibilityRole="image"

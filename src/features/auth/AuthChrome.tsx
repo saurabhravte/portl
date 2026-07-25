@@ -14,8 +14,8 @@ import {
 } from "react-native";
 import { GoogleSignInButton } from "./GoogleSignInButton";
 
-const lightModeIcon = require("../../../assets/lightmode.png");
-const darkModeIcon = require("../../../assets/darkmode.png");
+const lightModeIcon = require("../../../assets/app-icons-light-dark/Light/iOS/AppIcon-1024.png");
+const darkModeIcon = require("../../../assets/app-icons-light-dark/Dark/iOS/AppIcon-1024.png");
 
 /** Divider used between primary auth CTA and social buttons. */
 export function AuthOrDivider({ label = "Or continue with" }: { label?: string }) {

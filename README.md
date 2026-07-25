@@ -1,9 +1,9 @@
 <div align="center">
 
 <picture>
-  <source media="(prefers-color-scheme: dark)" srcset="assets/darkmode.png">
-  <source media="(prefers-color-scheme: light)" srcset="assets/lightmode.png">
-  <img alt="Portl" width="120" src="assets/lightmode.png">
+  <source media="(prefers-color-scheme: dark)" srcset="assets/app-icons-light-dark/Dark/iOS/AppIcon-1024.png">
+  <source media="(prefers-color-scheme: light)" srcset="assets/app-icons-light-dark/Light/iOS/AppIcon-1024.png">
+  <img alt="Portl" width="120" src="assets/app-icons-light-dark/Light/iOS/AppIcon-1024.png">
 </picture>
 
 # Portl
@@ -363,8 +363,7 @@ bun run test:rls         # Supabase RLS policy tests
 ```
 portl/
 ├── assets/
-│   ├── darkmode.png          # Brand mark (dark theme)
-│   ├── lightmode.png         # Brand mark (light theme)
+│   ├── app-icons-light-dark/ # App icons (Light + Dark, iOS + Android)
 │   └── images/
 ├── src/
 │   ├── app/                  # expo-router routes
