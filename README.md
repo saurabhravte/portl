@@ -1,10 +1,6 @@
 <div align="center">
 
-<picture>
-  <source media="(prefers-color-scheme: dark)" srcset="assets/app-icons-light-dark/Dark/iOS/AppIcon-1024.png">
-  <source media="(prefers-color-scheme: light)" srcset="assets/app-icons-light-dark/Light/iOS/AppIcon-1024.png">
-  <img alt="Portl" width="120" src="assets/app-icons-light-dark/Light/iOS/AppIcon-1024.png">
-</picture>
+<img src="assets/app-icons-light-dark/Light/iOS/AppIcon-1024.png" width="128" alt="Portl app icon" />
 
 # Portl
 
@@ -395,6 +391,8 @@ This project was built for hackathon demonstration. See repository license terms
 ---
 
 <div align="center">
+
+<img src="assets/app-icons-light-dark/Light/iOS/AppIcon-1024.png" width="48" alt="Portl" />
 
 **Portl** — Built with Expo, React Native, Clerk, and Supabase.
 
