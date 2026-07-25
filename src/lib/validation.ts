@@ -65,15 +65,28 @@ export const passwordSchema = z
   });
 
 /** Display / handle name used as the Portl username. */
+/**
+ * Must stay in sync with Clerk Dashboard -> User & authentication -> Username.
+ * Client rules that are LOOSER than Clerk's turn a friendly inline hint into a
+ * server rejection alert after the round trip, which is exactly the sign-up
+ * failure mode Phase 2 set out to remove.
+ *
+ * Clerk instance settings this mirrors:
+ *   Minimum username length      4
+ *   Maximum username length     64
+ *   Allow extended characters   Off  -> letters, numbers, dot, underscore
+ *   Allow numeric usernames     Off  -> must contain at least one letter
+ */
 export const usernameSchema = z
   .string()
   .trim()
-  .min(3, "Username must be at least 3 characters.")
-  .max(32, "Username must be at most 32 characters.")
+  .min(4, "Username must be at least 4 characters.")
+  .max(64, "Username must be at most 64 characters.")
   .regex(
     /^[a-zA-Z0-9._]+$/,
     "Username can only use letters, numbers, dots, and underscores.",
-  );
+  )
+  .regex(/[a-zA-Z]/, "Username must include at least one letter.");
 
 export type PasswordStrengthRule = {
   key: "length" | "lower" | "upper" | "number" | "special";

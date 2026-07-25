@@ -3,6 +3,7 @@ import {
   amenitySchema,
   auditExportSchema,
   authIdentitySchema,
+  signUpFormSchema,
   bookingDecisionSchema,
   bookingSchema,
   bulkFlatImportSchema,
@@ -272,5 +273,49 @@ describe("SLA helpers (24h first-response)", () => {
   it("slaAgeLabel renders a compact age", () => {
     const created = new Date(Date.now() - 3 * HOUR).toISOString();
     expect(slaAgeLabel(created)).toMatch(/h/);
+  });
+});
+
+/*
+ * Phase 2.1 — these mirror the Clerk instance settings under
+ * User & authentication -> Username. If someone changes the dashboard, or
+ * loosens this schema, one of these fails instead of the mismatch surfacing
+ * as a server rejection after the user has already hit "Create account".
+ */
+describe("usernameSchema matches the Clerk instance settings", () => {
+  it.each(["ada", "abc"])("rejects %p — Clerk minimum is 4", (value) => {
+    expect(signUpFormSchema.safeParse({ username: value, password: "Str0ng!pass" }).success).toBe(false);
+  });
+
+  it("accepts a 4-character username", () => {
+    expect(signUpFormSchema.safeParse({ username: "adaa", password: "Str0ng!pass" }).success).toBe(true);
+  });
+
+  it("rejects an all-numeric username — Clerk has numeric usernames off", () => {
+    expect(signUpFormSchema.safeParse({ username: "12345", password: "Str0ng!pass" }).success).toBe(false);
+  });
+
+  it("accepts letters, numbers, dots and underscores", () => {
+    for (const value of ["ada.lovelace", "ada_1815", "Ada99"]) {
+      expect(signUpFormSchema.safeParse({ username: value, password: "Str0ng!pass" }).success).toBe(true);
+    }
+  });
+
+  it("rejects extended characters — Clerk has them off", () => {
+    for (const value of ["ada lovelace", "ada-lovelace", "ada@home"]) {
+      expect(signUpFormSchema.safeParse({ username: value, password: "Str0ng!pass" }).success).toBe(false);
+    }
+  });
+
+  it("rejects a username over Clerk's 64-character maximum", () => {
+    expect(signUpFormSchema.safeParse({ username: "a".repeat(65), password: "Str0ng!pass" }).success).toBe(false);
+    expect(signUpFormSchema.safeParse({ username: "a".repeat(64), password: "Str0ng!pass" }).success).toBe(true);
+  });
+
+  it("no longer accepts email or phone at sign-up", () => {
+    const withEmail = signUpFormSchema.safeParse({
+      username: "adaa", password: "Str0ng!pass", email: "ada@example.com",
+    });
+    expect(withEmail.success).toBe(false);
   });
 });
