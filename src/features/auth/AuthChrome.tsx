@@ -1,18 +1,15 @@
 import { AppIcon } from "@/components/ui";
 import { useThemeStore } from "@/stores/theme";
 import { useThemeColors } from "@/theme/useThemeColors";
-import { Ionicons } from "@expo/vector-icons";
 import { Image } from "expo-image";
 import { useRouter } from "expo-router";
 import React from "react";
 import {
-  ActivityIndicator,
   Pressable,
   Text,
   useColorScheme,
   View,
 } from "react-native";
-import { GoogleSignInButton } from "./GoogleSignInButton";
 
 const lightModeIcon = require("../../../assets/app-icons-light-dark/Light/iOS/AppIcon-1024.png");
 const darkModeIcon = require("../../../assets/app-icons-light-dark/Dark/iOS/AppIcon-1024.png");
@@ -105,71 +102,18 @@ export function AuthThemeToggle() {
   );
 }
 
-/** Full-width navy CTA matching the auth mockup. */
-export function AuthPrimaryButton({
-  title,
-  onPress,
-  loading,
-  disabled,
-}: {
-  title: string;
-  onPress: () => void;
-  loading?: boolean;
-  disabled?: boolean;
-}) {
-  const colors = useThemeColors();
-
-  return (
-    <Pressable
-      accessibilityRole="button"
-      accessibilityLabel={title}
-      accessibilityState={{ disabled: !!(disabled || loading), busy: !!loading }}
-      onPress={onPress}
-      disabled={disabled || loading}
-      className={`min-h-12 items-center justify-center rounded-xl bg-ink px-4 ${
-        disabled ? "opacity-50" : "active:opacity-85"
-      }`}
-    >
-      {loading ? (
-        <ActivityIndicator color={colors.inverse} />
-      ) : (
-        <Text className="text-label font-semibold text-inverse">{title}</Text>
-      )}
-    </Pressable>
-  );
-}
-
-/** Side-by-side social buttons from the auth mockup. */
-export function AuthSocialRow({
-  googleLabel = "Continue with Google",
-  disabled,
-}: {
-  googleLabel?: string;
-  disabled?: boolean;
-}) {
-  const colors = useThemeColors();
-
-  return (
-    <View className="flex-row gap-3">
-      <Pressable
-        accessibilityRole="button"
-        accessibilityLabel="Apple sign-in is not available yet"
-        accessibilityState={{ disabled: true }}
-        disabled
-        className="min-h-12 flex-1 flex-row items-center justify-center gap-2 rounded-xl bg-surface-alt opacity-45"
-      >
-        <Ionicons name="logo-apple" size={20} color={colors.ink} />
-        <Text className="text-caption font-semibold text-ink" numberOfLines={1}>
-          Login account
-        </Text>
-      </Pressable>
-      <View className="min-h-12 flex-1">
-        <GoogleSignInButton
-          label={googleLabel}
-          disabled={disabled}
-          layout="compact"
-        />
-      </View>
-    </View>
-  );
-}
+/*
+ * REMOVED (Phase 3.3 / 7.1 / 7.5)
+ * -------------------------------
+ * `AuthPrimaryButton` was a second button implementation used only on the
+ * auth screens: `bg-ink` + `rounded-xl` where the shared <Button> is
+ * `bg-primary` + `rounded-md`. Two components rendering "the primary action"
+ * two different ways is exactly the screen-specific one-off Phase 3.3
+ * forbids, and it meant the auth CTA silently ignored the brand CTA token.
+ * Auth screens now use the shared <Button>.
+ *
+ * `AuthSocialRow` rendered a permanently disabled Apple button labelled
+ * "Login account" next to the real Google one. Apple sign-in is not wired up,
+ * so it was a dead control taking half the row and implying a capability that
+ * does not exist. Use <GoogleSignInButton /> directly.
+ */

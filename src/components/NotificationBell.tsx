@@ -19,7 +19,7 @@ export function NotificationBell({ href }: { href: string }) {
       <AppIcon name={count ? "bell-active" : "bell"} size={22} />
       {count > 0 ? (
         <View className="absolute right-1 top-1 min-w-4.5 items-center justify-center rounded-pill bg-deny px-1 h-4.5">
-          <Text className="text-[10px] font-medium text-inverse">
+          <Text className="text-caption font-medium text-inverse">
             {count > 9 ? "9+" : count}
           </Text>
         </View>

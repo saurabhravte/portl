@@ -256,7 +256,7 @@ export default function CodeEntry() {
         placeholder={
           mode === "resident" ? "R••••••••" : mode === "helper" ? "H••••••" : "••••••"
         }
-        className="min-h-[72px] text-center text-3xl tracking-[12px]"
+        className="min-h-18 text-center text-3xl tracking-[12px]"
       />
       <Button
         title={

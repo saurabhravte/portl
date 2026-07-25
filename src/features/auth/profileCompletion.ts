@@ -47,13 +47,24 @@ export function hasUsableUsername(
   return name.length >= 3;
 }
 
+/**
+ * Phase 2.2 — phone number is NO LONGER part of this check.
+ *
+ * A missing phone used to force every Google user through
+ * `/(auth)/complete-profile` before they could reach the app. Phone is
+ * society contact information, not an authentication factor, so it now lives
+ * in Profile → Contact details where it is editable at any time.
+ *
+ * A username is still required, because it is the display handle every other
+ * resident sees in the directory, on notices and in approvals. Google gives
+ * us a full name but not a handle, and there is nothing sensible to show
+ * without one.
+ */
 export function needsProfileCompletion(
   user: ClerkUserLike | null | undefined,
   profile: Profile | null | undefined,
 ): boolean {
   if (!user || !profile) return false;
   if (!isGoogleAuthUser(user)) return false;
-  const missingPhone = !profile.phone?.trim();
-  const missingUsername = !hasUsableUsername(user, profile);
-  return missingPhone || missingUsername;
+  return !hasUsableUsername(user, profile);
 }

@@ -11,6 +11,8 @@
     "lint": "expo lint",
     "typecheck": "tsc --noEmit",
     "doctor": "bunx expo-doctor",
+    "doctor:google": "node ./scripts/check-google-signin.js",
+    "audit:design": "node ./scripts/audit-design-tokens.js",
     "config:public": "expo config --type public",
     "build:apk": "eas build --platform android --profile preview",
     "build:ios": "eas build --platform ios --profile preview",

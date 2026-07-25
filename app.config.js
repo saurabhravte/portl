@@ -35,15 +35,35 @@ module.exports = ({ config }) => {
     name: process.env.EXPO_APP_NAME?.trim() || config.name,
     version: process.env.APP_VERSION?.trim() || config.version,
     owner: process.env.EXPO_OWNER?.trim() || config.owner,
+    /*
+     * PHASE 1.2 — the Google Sign-In root cause.
+     *
+     * These used to fall back to the literal "com.portl.dev" whenever
+     * EXPO_IOS_BUNDLE_IDENTIFIER / EXPO_ANDROID_PACKAGE were absent, silently
+     * overriding the real ids in app.json (com.saurabhravte.portl).
+     *
+     * Google binds an Android OAuth client to (package name + SHA-1) and an
+     * iOS client to the bundle id. Building with a package the OAuth client
+     * has never seen makes Credential Manager reject the request with
+     * DEVELOPER_ERROR / status 10 the instant the user taps the button —
+     * which is exactly the reported failure. Nothing in the JS surfaces it,
+     * because the ids in the Google Cloud Console look perfectly correct.
+     *
+     * app.json is now the source of truth and env vars are an override, not a
+     * replacement. `assertReleaseConfiguration` still requires them for
+     * release builds, so this only changes the dev/preview fallback.
+     */
     ios: {
       ...config.ios,
       bundleIdentifier:
-        process.env.EXPO_IOS_BUNDLE_IDENTIFIER?.trim() || "com.portl.dev",
+        process.env.EXPO_IOS_BUNDLE_IDENTIFIER?.trim() ||
+        config.ios?.bundleIdentifier,
       buildNumber: process.env.IOS_BUILD_NUMBER?.trim() || "1",
     },
     android: {
       ...config.android,
-      package: process.env.EXPO_ANDROID_PACKAGE?.trim() || "com.portl.dev",
+      package:
+        process.env.EXPO_ANDROID_PACKAGE?.trim() || config.android?.package,
       versionCode: Number.parseInt(process.env.ANDROID_VERSION_CODE || "1", 10),
     },
     // Native Google Sign-In module (paired with @clerk/expo already in app.json).

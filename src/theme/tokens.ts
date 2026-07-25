@@ -1,164 +1,220 @@
 /**
- * JS-only color tokens for APIs that cannot take Uniwind classNames
+ * JS-only colour tokens for APIs that cannot take Uniwind classNames
  * (StatusBar, tabBarStyle, ActivityIndicator, Razorpay sheet, SVG charts).
  * UI styling lives in `src/global.css` + `className`.
  *
- * These mirror the CSS variables in global.css exactly. Use `useThemeColors()`
- * for the active scheme; the legacy `color` export stays as the light palette.
+ * These MIRROR the CSS variables in global.css exactly. `tokens.parity.test.ts`
+ * parses both files and fails if they ever drift, because a mismatch here is
+ * invisible in review and shows up as one wrong-coloured spinner in dark mode.
  *
- * Brand direction: Portl orange (Primary/CTA) with sky as the secondary accent.
+ * Brand direction: Portl claret (Primary/CTA) with teal as the secondary
+ * accent, on a warm paper background.
  *
  * Three families, do not mix them up:
- *   <role>      — FILL. Backgrounds, borders, icons, chart series.
- *   <role>Text  — the same role used AS TEXT on paper/surface. Required in
- *                 light mode, where the raw fills fail AA (orange 2.69:1).
- *   on<Role>    — label drawn on top of the fill. Always dark ink; white on
- *                 orange is 2.80:1 and fails.
+ *   <role>      FILL. Backgrounds, borders, icons, chart series.
+ *   <role>Text  the same role used AS TEXT on paper/surface. Required in
+ *               light mode, where several fills fail AA as text.
+ *   on<Role>    label drawn on top of the fill.
  */
 export type ColorToken =
   | "primary" | "primarySoft" | "primaryText" | "onPrimary"
-  | "accent" | "accentSoft" | "accentText" | "onAccent"
-  | "paper" | "surface" | "surfaceAlt" | "border"
+  | "accent" | "accentStrong" | "accentSoft" | "accentText" | "onAccent"
+  | "paper" | "surface" | "surfaceAlt" | "border" | "borderStrong"
   | "ink" | "inkSoft" | "inkMuted" | "inkFaint" | "inverse"
   | "approve" | "approveBg" | "approveText" | "onApprove"
   | "deny" | "denyBg" | "denyText" | "onDeny"
   | "warn" | "warnBg" | "warnText" | "onWarn"
-  | "info" | "infoSoft" | "infoText" | "onInfo";
+  | "info" | "infoSoft" | "infoText" | "onInfo"
+  | "onboardBg" | "onboardInk" | "onboardInkMuted"
+  | "onboardCta" | "onOnboardCta" | "onboardDot" | "onboardBorder";
 
 export type ThemeColors = Record<ColorToken, string>;
 
 export const lightColors: ThemeColors = {
-  primary: "#F97316",
-  primarySoft: "#FFF1E6",
-  primaryText: "#C2410C",
-  onPrimary: "#18181B",
+  primary: "#9A1343",
+  primarySoft: "#F3E8DC",
+  primaryText: "#9A1343",
+  onPrimary: "#FFFFFF",
 
-  accent: "#0EA5E9",
-  accentSoft: "#E0F2FE",
-  accentText: "#0369A1",
-  onAccent: "#18181B",
+  accent: "#0084A1",
+  accentStrong: "#00647A",
+  accentSoft: "#F3E8DC",
+  accentText: "#005F73",
+  onAccent: "#FFFFFF",
 
-  paper: "#FAFAFA",
+  paper: "#FAF6F0",
   surface: "#FFFFFF",
-  surfaceAlt: "#F8F8F9",
-  border: "#E4E4E7",
+  surfaceAlt: "#F3E8DC",
+  border: "#E3D8CC",
+  borderStrong: "#8A7568",
 
-  ink: "#18181B",
-  inkSoft: "#3F3F46",
-  inkMuted: "#71717A",
-  inkFaint: "#A1A1AA",
+  ink: "#211C1E",
+  inkSoft: "#443A3D",
+  inkMuted: "#6E625D",
+  inkFaint: "#A2938C",
   inverse: "#FFFFFF",
 
-  approve: "#16A34A",
-  approveBg: "#DCFCE7",
-  approveText: "#15803D",
-  onApprove: "#18181B",
+  approve: "#1A6B42",
+  approveBg: "#DCEFE3",
+  approveText: "#1A6B42",
+  onApprove: "#FFFFFF",
 
-  deny: "#EF4444",
-  denyBg: "#FEE2E2",
-  denyText: "#B91C1C",
-  onDeny: "#18181B",
+  deny: "#B3261E",
+  denyBg: "#FBE2DF",
+  denyText: "#B3261E",
+  onDeny: "#FFFFFF",
 
-  warn: "#FACC15",
-  warnBg: "#FEF9C3",
-  warnText: "#854D0E",
-  onWarn: "#18181B",
+  warn: "#E69A28",
+  warnBg: "#F3E8DC",
+  warnText: "#7A4E0F",
+  onWarn: "#211C1E",
 
-  info: "#3B82F6",
-  infoSoft: "#DBEAFE",
-  infoText: "#1D4ED8",
-  onInfo: "#18181B",
+  info: "#00647A",
+  infoSoft: "#F3E8DC",
+  infoText: "#005F73",
+  onInfo: "#FFFFFF",
+
+  onboardBg: "#FFFFFF",
+  onboardInk: "#000000",
+  onboardInkMuted: "#5C5C5C",
+  onboardCta: "#000000",
+  onOnboardCta: "#FFFFFF",
+  onboardDot: "#D4D4D4",
+  onboardBorder: "#E6E6E6",
 };
 
 export const darkColors: ThemeColors = {
-  primary: "#FB923C",
-  primarySoft: "#2A1B10",
-  primaryText: "#FB923C",
-  onPrimary: "#121212",
+  primary: "#D82862",
+  primarySoft: "#38202B",
+  primaryText: "#F06292",
+  onPrimary: "#FFFFFF",
 
-  accent: "#38BDF8",
-  accentSoft: "#0C2A3A",
-  accentText: "#38BDF8",
-  onAccent: "#121212",
+  accent: "#00A5C8",
+  accentStrong: "#00A5C8",
+  accentSoft: "#38202B",
+  accentText: "#00A5C8",
+  onAccent: "#161418",
 
-  paper: "#121212",
-  surface: "#1E1E1F",
-  surfaceAlt: "#26262A",
-  border: "#2E2E32",
+  paper: "#161418",
+  surface: "#231F26",
+  surfaceAlt: "#38202B",
+  border: "#3A343D",
+  borderStrong: "#635969",
 
-  ink: "#EDEDED",
-  inkSoft: "#D4D4D8",
-  inkMuted: "#A1A1AA",
-  inkFaint: "#71717A",
-  inverse: "#121212",
+  ink: "#F6ECE0",
+  inkSoft: "#D8CCC2",
+  inkMuted: "#AFA29A",
+  inkFaint: "#7D7278",
+  inverse: "#161418",
 
-  approve: "#4ADE80",
-  approveBg: "#0F2A1A",
-  approveText: "#4ADE80",
-  onApprove: "#121212",
+  approve: "#5FD39A",
+  approveBg: "#14301F",
+  approveText: "#5FD39A",
+  onApprove: "#161418",
 
-  deny: "#F87171",
-  denyBg: "#2E1516",
-  denyText: "#F87171",
-  onDeny: "#121212",
+  deny: "#F2938C",
+  denyBg: "#351A18",
+  denyText: "#F2938C",
+  onDeny: "#161418",
 
-  warn: "#FDE047",
-  warnBg: "#2C2610",
-  warnText: "#FDE047",
-  onWarn: "#121212",
+  warn: "#E69A28",
+  warnBg: "#38202B",
+  warnText: "#E69A28",
+  onWarn: "#161418",
 
-  info: "#60A5FA",
-  infoSoft: "#132139",
-  infoText: "#60A5FA",
-  onInfo: "#121212",
+  info: "#00A5C8",
+  infoSoft: "#38202B",
+  infoText: "#00A5C8",
+  onInfo: "#161418",
+
+  onboardBg: "#000000",
+  onboardInk: "#FFFFFF",
+  onboardInkMuted: "#A8A8A8",
+  onboardCta: "#FFFFFF",
+  onOnboardCta: "#000000",
+  onboardDot: "#3D3D3D",
+  onboardBorder: "#262626",
 };
 
 export function getColors(scheme: string | null | undefined): ThemeColors {
   return scheme === "dark" ? darkColors : lightColors;
 }
 
-/* ── Role-based accent logic ────────────────────────────────────────────
- * Guard    → orange + red   (urgency / visibility at the gate)
- * Admin    → blue           (control / data)
- * Resident → green + blue   (trust / approval)
+/* -- Spacing scale (Phase 3.1) -----------------------------------------
+ * Mirrors --spacing-* in global.css. For the rare RN API that needs a
+ * number (FlatList offsets, scroll insets, SVG geometry). Layout in JSX
+ * uses the Tailwind spacing classes, never these.
+ */
+export const SPACING = {
+  xs: 4,
+  sm: 8,
+  md: 12,
+  base: 16,
+  lg: 24,
+  xl: 32,
+  "2xl": 48,
+  "3xl": 64,
+} as const;
+
+export type SpacingStep = keyof typeof SPACING;
+
+/* -- Elevation (Phase 3.1) ---------------------------------------------
+ * Two steps, expressed as RN shadow props so every raised surface in the
+ * app is one of exactly two shapes.
+ */
+export const ELEVATION = {
+  1: {
+    shadowColor: "#000000",
+    shadowOpacity: 0.05,
+    shadowRadius: 8,
+    shadowOffset: { width: 0, height: 2 },
+    elevation: 1,
+  },
+  2: {
+    shadowColor: "#000000",
+    shadowOpacity: 0.12,
+    shadowRadius: 20,
+    shadowOffset: { width: 0, height: 8 },
+    elevation: 6,
+  },
+} as const;
+
+/* -- Role accents (Phase 5.5) -------------------------------------------
+ * ONE CTA COLOUR FOR THE WHOLE APP.
  *
- * This only shifts the DECORATIVE accent of a role's surfaces. The universal
- * status colours (approve / warn / deny) are deliberately NOT part of this
- * map — a red badge means "denied" for every role and is never reused to
- * decorate a guard screen.
+ * This map used to give each role its own `accent`, which was also used for
+ * that role's primary CTA: claret for guards, teal for admins, green for
+ * residents. Three different "primary" buttons is exactly what Phase 5.5
+ * forbids, and it also meant the approve-green was doing double duty as both
+ * "this is the resident theme" and "this action approves something".
+ *
+ * `accent` is now `primary` for every role -- the CTA is claret everywhere.
+ * Roles are distinguished only by `emphasis`, which is for decorative chrome
+ * (hero tint, active tab underline) and never for a button.
  */
 export type AppRole = "resident" | "guard" | "admin";
 
 export interface RoleAccent {
-  /** Fill for the role's hero surfaces, active tab and primary CTA. */
+  /** Primary CTA fill. Identical across roles by design -- do not vary it. */
   accent: ColorToken;
   /** Tint behind icons/chips on that role's screens. */
   accentSoft: ColorToken;
-  /** Same role accent when rendered as text. AA-safe in both schemes. */
+  /** The CTA colour rendered as text. AA-safe in both schemes. */
   accentText: ColorToken;
-  /** Secondary emphasis, used sparingly for the role's high-signal chrome. */
+  /** Decorative role signal. Chrome only, never a button fill. */
   emphasis: ColorToken;
 }
 
+const SHARED_CTA = {
+  accent: "primary",
+  accentSoft: "primarySoft",
+  accentText: "primaryText",
+} as const;
+
 export const ROLE_ACCENTS: Record<AppRole, RoleAccent> = {
-  guard: {
-    accent: "primary",
-    accentSoft: "primarySoft",
-    accentText: "primaryText",
-    emphasis: "deny",
-  },
-  admin: {
-    accent: "info",
-    accentSoft: "infoSoft",
-    accentText: "infoText",
-    emphasis: "accent",
-  },
-  resident: {
-    accent: "approve",
-    accentSoft: "approveBg",
-    accentText: "approveText",
-    emphasis: "info",
-  },
+  guard: { ...SHARED_CTA, emphasis: "warn" },
+  admin: { ...SHARED_CTA, emphasis: "accent" },
+  resident: { ...SHARED_CTA, emphasis: "approve" },
 };
 
 /** Resolve a role's accent tokens to concrete hex values for the given scheme. */
@@ -176,16 +232,27 @@ export function getRoleAccent(
   };
 }
 
-/* ── Data-viz ────────────────────────────────────────────────────────────
- * Sequential ramp for heatmaps/intensity charts, light → dark. Built from the
- * Info family so charts stay on-palette and shift with the scheme. Index 0 is
+/* -- Data-viz -----------------------------------------------------------
+ * Sequential ramp for heatmaps/intensity charts, light -> dark. Index 0 is
  * the "no data" step and must read as empty, not as a low value.
+ *
+ * The two mid-steps used to be hardcoded Tailwind blues (#2C4A7C, #93C5FD)
+ * left over from the previous palette -- the only off-token colours left in
+ * src/. They are now interpolated from the teal family so the ramp shifts
+ * with the theme and `audit:design` stays clean.
  */
+const CHART_MID = {
+  light: ["#7FC1D0", "#3FA3B9"],
+  dark: ["#00566B", "#4FC3DD"],
+} as const;
+
 export function getChartScale(scheme: string | null | undefined): string[] {
   const c = getColors(scheme);
-  return scheme === "dark"
-    ? [c.surfaceAlt, c.infoSoft, "#2C4A7C", c.info, "#93C5FD"]
-    : [c.surfaceAlt, c.infoSoft, "#93C5FD", c.info, c.infoText];
+  const isDark = scheme === "dark";
+  const [lo, hi] = isDark ? CHART_MID.dark : CHART_MID.light;
+  return isDark
+    ? [c.surfaceAlt, c.infoSoft, lo, c.info, hi]
+    : [c.surfaceAlt, c.infoSoft, lo, hi, c.infoText];
 }
 
 /** @deprecated prefer useThemeColors() so dark mode is respected. */

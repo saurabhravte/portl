@@ -51,9 +51,19 @@ describe.each([
     expect(contrast(palette[token], palette.surface)).toBeGreaterThanOrEqual(AA);
   });
 
+  /*
+   * `onAccent` is checked against `accentStrong`, NOT `accent`.
+   *
+   * The brand secondary #0084A1 sits in a contrast dead zone: white on it is
+   * 4.36:1 and near-black on it is 4.20:1, so no label passes AA on that
+   * fill. It is therefore an icon/graphic colour only (asserted separately
+   * below against the 3:1 non-text bar), and any teal surface carrying a
+   * label uses `accentStrong`. Pointing this assertion at `accent` would
+   * mean either failing forever or silently shipping illegible buttons.
+   */
   const fills = [
     ["onPrimary", "primary"],
-    ["onAccent", "accent"],
+    ["onAccent", "accentStrong"],
     ["onApprove", "approve"],
     ["onDeny", "deny"],
     ["onWarn", "warn"],
@@ -61,6 +71,23 @@ describe.each([
   ] as const;
   it.each(fills)("%s is legible on %s", (label, fill) => {
     expect(contrast(palette[label], palette[fill])).toBeGreaterThanOrEqual(AA);
+  });
+
+  /*
+   * Icon-only fills still have to be distinguishable from what they sit on.
+   * WCAG 1.4.11 sets that bar at 3:1 for non-text content. This is the
+   * guard that keeps `accent` honest now that it is exempt from the AA
+   * label check above.
+   */
+  const NON_TEXT = 3;
+  const graphicFills = ["accent", "primary", "approve", "deny"] as const;
+  it.each(graphicFills)("%s is distinguishable as a graphic", (token) => {
+    expect(contrast(palette[token], palette.paper)).toBeGreaterThanOrEqual(
+      NON_TEXT,
+    );
+    expect(contrast(palette[token], palette.surface)).toBeGreaterThanOrEqual(
+      NON_TEXT,
+    );
   });
 
   const tints = [

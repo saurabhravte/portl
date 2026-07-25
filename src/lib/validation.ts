@@ -136,12 +136,24 @@ export const signInFormSchema = z.strictObject({
   identifier: signInIdentifierSchema,
   password: z.string().min(1, "Enter your password."),
 });
-/** Full registration form — phone is contact-only, not used for sign-in. */
+/**
+ * Phase 2.1 — account creation collects a username and a password, nothing
+ * else. Email and phone moved to Profile → Contact details, where they are
+ * added and verified after the account exists and can be edited later.
+ *
+ * Keeping email here meant a mistyped address blocked account creation
+ * outright, and forcing a phone up front cost a field on the very first
+ * screen for data the app does not need until the user joins a society.
+ */
 export const signUpFormSchema = z.strictObject({
   username: usernameSchema,
-  email: emailSchema,
   password: passwordSchema,
-  phone: phoneSchema,
+});
+
+/** Contact details captured post-signup in Profile. Both optional. */
+export const contactDetailsSchema = z.strictObject({
+  email: emailSchema.optional().or(z.literal("")),
+  phone: phoneSchema.optional().or(z.literal("")),
 });
 /** Google users fill remaining required profile fields before entering the app. */
 export const profileCompletionSchema = z.strictObject({

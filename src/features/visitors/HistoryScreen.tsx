@@ -156,7 +156,7 @@ export function VisitorHistoryScreen({
   );
 
   if (embedded) {
-    return <View className="min-h-[420px] flex-1 gap-3">{body}</View>;
+    return <View className="min-h-105 flex-1 gap-3">{body}</View>;
   }
 
   return <Screen className="gap-3 p-4">{body}</Screen>;

@@ -140,7 +140,7 @@ export default function AdminNotices() {
               value={body}
               onChangeText={setBody}
               multiline
-              className="min-h-[100px] pt-3"
+              className="min-h-24 pt-3"
             />
             <View className="flex-row flex-wrap gap-2">
               {(["draft", "now", "scheduled"] as const).map((value) => (
