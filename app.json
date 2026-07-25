@@ -38,11 +38,18 @@
         "expo-splash-screen",
         {
           "backgroundColor": "#0A1018",
-          "image": "./assets/expo-splash-source-2048.png",
+          "image": "./assets/app-icons-light-dark/Light/iOS/AppIcon-1024.png",
           "imageWidth": 180,
+          "dark": {
+            "image": "./assets/app-icons-light-dark/Dark/iOS/AppIcon-1024.png",
+            "backgroundColor": "#0A1018"
+          },
           "android": {
-            "image": "./assets/expo-splash-source-2048.png",
-            "imageWidth": 180
+            "image": "./assets/app-icons-light-dark/Light/iOS/AppIcon-1024.png",
+            "imageWidth": 180,
+            "dark": {
+              "image": "./assets/app-icons-light-dark/Dark/iOS/AppIcon-1024.png"
+            }
           }
         }
       ],
